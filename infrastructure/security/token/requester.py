@@ -1,0 +1,19 @@
+import requests
+
+from typing import Tuple
+from infrastructure.security.token.TOKEN_URLS import REMOTE_VALIDATE_TOKEN
+
+
+class TokenRequester:
+
+    def parse_reponse(self, result: requests.Response) -> Tuple[bool, dict]:
+        r_json: dict = result.json()
+        if not r_json.get('validate'):
+            return False, r_json
+        return r_json['validate'], r_json['payload']
+
+    def request_for_validate(self, token) -> Tuple[bool, dict]:
+        result = requests.post(
+            url=REMOTE_VALIDATE_TOKEN, json={f'token: {token}, app: {APP_ID}'}
+        )
+        return self.parse_reponse(result)
