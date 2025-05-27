@@ -1,28 +1,18 @@
 from typing import List
-from typing import Optional
-from sqlalchemy import ForeignKey
-from sqlalchemy import String
-from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
-from sqlalchemy.orm import relationship
 
 from sqlalchemy import (
     Column,
     DateTime,
     Integer,
-    String,
-    Text,
-    BOOLEAN,
-    ForeignKey,
-    Table,
-    Enum
+    ForeignKey
 )
 
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
-from business.models.base import Base
+from infrastructure.database.sql.models.base import Base
 
 
 """
