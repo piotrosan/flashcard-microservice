@@ -2,6 +2,8 @@ import requests
 
 from typing import Tuple
 from infrastructure.security.token.TOKEN_URLS import REMOTE_VALIDATE_TOKEN
+from infrastructure.security.token.exception.verify_exception import \
+    TokenRequestGetter
 from settings import APP_ID
 
 
@@ -14,7 +16,10 @@ class TokenRequester:
         return r_json['validate'], r_json['payload']
 
     def request_for_validate(self, token) -> Tuple[bool, dict]:
-        result = requests.post(
-            url=REMOTE_VALIDATE_TOKEN, json={f'token: {token}, app: {APP_ID}'}
-        )
+        try:
+            result = requests.post(
+                url=REMOTE_VALIDATE_TOKEN, json={f'token: {token}, app: {APP_ID}'}
+            )
+        except requests.exceptions.RequestException as e:
+            raise TokenRequestGetter(detail=str(e), status_code=403)
         return self.parse_reponse(result)

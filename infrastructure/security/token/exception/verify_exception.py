@@ -7,3 +7,7 @@ class TokenExpired(HTTPException):
 
 class TokenDifferentAppId(HTTPException):
     pass
+
+
+class TokenRequestGetter(HTTPException):
+    pass

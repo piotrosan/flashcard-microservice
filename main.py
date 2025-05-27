@@ -1,26 +1,19 @@
-from fastapi import Depends, FastAPI
+from fastapi import FastAPI
+from starlette.middleware import Middleware
+from starlette.middleware.authentication import AuthenticationMiddleware
 
-# from .dependencies import get_query_token, get_token_header
-# from .internal import admin
+from infrastructure.security.middleware.auth import TokenAuthBackend
 from infrastructure.routers import flash_card
 
-app = FastAPI(
-    dependencies=[
-        # Depends(get_query_token)
-    ]
-)
+middlewares = [
+    Middleware(AuthenticationMiddleware, backends=TokenAuthBackend()),
+]
 
+app = FastAPI(middleware=middlewares)
 
+# include
 app.include_router(flash_card.router)
-app.add_middleware(UnicornMiddleware, some_config="rainbow")
-# app.include_router(
-#     admin.router,
-#     prefix="/admin",
-#     tags=["admin"],
-#     dependencies=[Depends(get_token_header)],
-#     responses={418: {"description": "I'm a teapot"}},
-# )
-#
+
 
 @app.get("/")
 async def root():

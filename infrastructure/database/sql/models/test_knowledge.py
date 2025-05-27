@@ -35,7 +35,8 @@ class AssociationKnowledgeFlashCard(Base):
     right_id: Mapped[int] = mapped_column(
         ForeignKey("flash_card.id"), primary_key=True
     )
-    child: Mapped["FlashCard"] = relationship(back_populates="test_knowledge")
+    child: Mapped["FlashCard"] = relationship(
+        back_populates="test_knowledge")
     parent: Mapped["TestKnowledge"] = relationship(
         back_populates="flash_cards")
 
