@@ -1,21 +1,24 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Path
+from fastapi import APIRouter, HTTPException, Path, Request
 
 # from ..dependencies import get_token_header
 
 router = APIRouter(
-    prefix="/flash-card",
-    tags=["flash_card"],
+    prefix="/test_knowledge",
+    tags=["knowledge"],
     dependencies=[
         # Depends(get_token_header)
     ],
     responses={404: {"description": "Not found"}},
 )
 
-@router.get("/{flash_card_id}")
-async def get_(flash_card_id: Annotated[int, Path()], request):
-    pass
+@router.get("/{test_id}")
+async def get_test(test_id: Annotated[int, Path()], request: Request):
+
+
+
+
 
 @router.put(
     "/{item_id}",

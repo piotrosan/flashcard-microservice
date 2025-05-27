@@ -12,5 +12,6 @@ class TokenVerifyProvider:
             cls,
             token: str,
             token_requester
-    ):
-        token_requester.request_for_validate(token)
+    ) -> bool:
+        validate, payload = token_requester.request_for_validate(token)
+        return validate

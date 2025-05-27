@@ -12,7 +12,7 @@ app = FastAPI(
 
 
 app.include_router(flash_card.router)
-
+app.add_middleware(UnicornMiddleware, some_config="rainbow")
 # app.include_router(
 #     admin.router,
 #     prefix="/admin",

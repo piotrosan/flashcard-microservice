@@ -1,30 +1,33 @@
-version: '3.9'
 services:
-  db:
-    container_name: db
+  db_flash:
+    container_name: db_flash
     image: postgres
     restart: always
     shm_size: 128mb
     ports:
-      - 5432:5432
+      - 5433:5433
     environment:
       POSTGRES_PASSWORD: example
-      POSTGRES_DB: identity_user
+      POSTGRES_DB: flash_card
       PGDATA: /data/postgres
     volumes:
-      - db:/data/postgres
+      - db_flash:/data/postgres
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres -d culture" ]
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d flash_card" ]
       interval: 10s
       retries: 5
       start_period: 30s
       timeout: 10s
 
-  adminer:
+  adminer_db_identity:
     image: adminer
     restart: always
     ports:
-      - 8080:8080
+      - 8081:8081
+
+#  app:
+#    networks:
+#      - flash_card
 
 #  cache:
 #    image: redis:6.2-alpine
@@ -36,6 +39,6 @@ services:
 #      - cache:/data
 
 volumes:
-  db:
-  cache:
-    driver: local
+  db_flash:
+#  cache:
+#    driver: local

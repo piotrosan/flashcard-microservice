@@ -2,6 +2,7 @@ import requests
 
 from typing import Tuple
 from infrastructure.security.token.TOKEN_URLS import REMOTE_VALIDATE_TOKEN
+from settings import APP_ID
 
 
 class TokenRequester:
