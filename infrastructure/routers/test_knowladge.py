@@ -1,8 +1,6 @@
 from typing import Annotated
-
-from fastapi import APIRouter, HTTPException, Path, Request
-
-# from ..dependencies import get_token_header
+from fastapi import APIRouter, HTTPException, Path, Request, Body
+from infrastructure.routers.models.knowledge import CreateKnowledgeRequest
 
 router = APIRouter(
     prefix="/test_knowledge",
@@ -13,10 +11,19 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
+
 @router.get("/{test_id}")
 async def get_test(test_id: Annotated[int, Path()], request: Request):
+    pass
 
 
+
+@router.post("/")
+async def create_test(
+        create_date: Annotated[CreateKnowledgeRequest, Body()],
+        request: Request
+):
+    pass
 
 
 

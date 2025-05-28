@@ -13,4 +13,3 @@ class FashCardService:
 
     def get_flash_card(self, flash_card: int):
         pass
-

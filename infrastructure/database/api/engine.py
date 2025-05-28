@@ -1,12 +1,36 @@
+import abc
+import logging
 from importlib import reload
-from typing import Iterable
 from typing_extensions import Any
+from typing import Sequence, Iterable
+from sqlalchemy import exc
 
-from . import session
+from infrastructure.database.api import session
 import infrastructure.database.api as reload_session
-from sqlalchemy import Select, Update, select, Row, and_, text, String
+from sqlalchemy import Select, Update, Row
 
-class BEngine:
+from infrastructure.exception.generic_exception import RawStatementHttpException
+
+logger = logging.getLogger("root")
+
+class DBEngineAbstract(abc.ABC):
+    def reload_session(self):
+        raise NotImplemented()
+
+    def query_statement(self, select_query: Select[Any]) -> Row[Any]:
+        raise NotImplemented()
+
+    def insert_objects(
+            self,
+            objects: Iterable[Any]
+    ) -> Iterable[Any]:
+        raise NotImplemented()
+
+    def _update_statement(self, upd: Update[Any]):
+        raise NotImplemented()
+
+
+class DBEngine(DBEngineAbstract):
 
     def reload_session(self):
         reload(reload_session)
@@ -29,3 +53,35 @@ class BEngine:
         with session as s:
             s.execute(upd).scalar()
             s.commit()
+
+    def raw_query(
+            self,
+            select_query: Select[Any],
+    ) -> Sequence[Row]:
+        try:
+            return list(self.query_statement(select_query))
+        except exc.SQLAlchemyError as e:
+            logger.critical(
+                f"Problem wile select raw statement "
+                f"custom select statement -> {e}"
+            )
+            raise RawStatementHttpException(
+                detail="Can not create select raw statement",
+                status_code=400
+            )
+
+    def raw_query_generator(
+            self,
+            select_query: Select[Any],
+    ) -> Row[Any]:
+        try:
+            return self.query_statement(select_query)
+        except exc.SQLAlchemyError as e:
+            logger.critical(
+                f"Problem wile select "
+                f"custom select statement -> {e}"
+            )
+            raise RawStatementHttpException(
+                detail="Can not select raw statement",
+                status_code=400
+            )
