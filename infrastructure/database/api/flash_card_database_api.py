@@ -111,13 +111,30 @@ class GetFlashCardDBAPI(DBEngineAbstract):
                 status_code=400
             )
 
-    def query_flash_card_generator(
+    def query_flash_card(
             self,
             flash_card_id: int
     ) -> Row[Any]:
         try:
+            return next(
+                self.query_statement(
+                    self._select_flash_card_from_id(flash_card_id))
+            )
+        except exc.SQLAlchemyError as e:
+            logger.critical(
+                f"Problem wile select flash card {flash_card_id} -> {e}"
+            )
+            raise FlashCardHttpException(
+                detail=f"Can not select flash card {flash_card_id}",
+                status_code=400
+            )
+
+    def query_flash_cards_generator(
+            self,
+    ) -> Row[Any]:
+        try:
             return self.query_statement(
-                self._select_flash_card_from_id(flash_card_id)
+                    self._select_all_flash_card_sql()
             )
         except exc.SQLAlchemyError as e:
             logger.critical(
