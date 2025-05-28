@@ -2,13 +2,15 @@ import abc
 import logging
 from importlib import reload
 from typing_extensions import Any
-from typing import Sequence, Iterable
+from typing import Sequence, Iterable, Generator
 from sqlalchemy import exc
 
 from infrastructure.database.api import session
 import infrastructure.database.api as reload_session
 from sqlalchemy import Select, Update, Row
 
+from infrastructure.database.api.pagination import Pagination
+from infrastructure.database.sql.models.base import Base
 from infrastructure.exception.generic_exception import RawStatementHttpException
 
 logger = logging.getLogger("root")
@@ -17,7 +19,12 @@ class DBEngineAbstract(abc.ABC):
     def reload_session(self):
         raise NotImplemented()
 
-    def query_statement(self, select_query: Select[Any]) -> Row[Any]:
+    def query_statement(
+            self,
+            select_query: Select[Any],
+            model: type[Base] = None,
+            page: int = None
+    ) -> Generator[Any]:
         raise NotImplemented()
 
     def insert_objects(
@@ -35,7 +42,16 @@ class DBEngine(DBEngineAbstract):
     def reload_session(self):
         reload(reload_session)
 
-    def query_statement(self, select_query: Select[Any]) -> Row[Any]:
+    def query_statement(
+            self,
+            select_query: Select[Any],
+            model: Base = None,
+            page: int = None
+    ) -> Generator[Any]:
+        if page:
+            pagination = Pagination(select_query, model)
+            select_query = pagination.get_page(page)
+
         with session as s:
             for row in s.execute(select_query):
                 yield row

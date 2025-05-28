@@ -1,9 +1,9 @@
 import logging
-from typing import Sequence, Iterable, List, cast
+from typing import Iterable, List, cast, Generator
 
 from typing_extensions import Any
 
-from sqlalchemy import Select, select, Row, text
+from sqlalchemy import select, text
 from sqlalchemy import exc
 
 from infrastructure.database.api.engine import DBEngine, DBEngineAbstract
@@ -98,11 +98,14 @@ class GetFlashCardDBAPI(DBEngineAbstract):
     def query_all_flash_card_with_attachments_generator(
             self,
             column: List[str] = None,
-            order: List[str] = None
-    ) -> Row[Any]:
+            order: List[str] = None,
+            page: int = None
+    ) -> Generator[Any]:
         try:
             return self.query_statement(
-                self._select_all_flash_card(column, order)
+                self._select_all_flash_card_sql(column, order),
+                FlashCard,
+                page
             )
         except exc.SQLAlchemyError as e:
             logger.critical("Problem wile select all flasgh")
@@ -113,12 +116,16 @@ class GetFlashCardDBAPI(DBEngineAbstract):
 
     def query_flash_card(
             self,
-            flash_card_id: int
-    ) -> Row[Any]:
+            flash_card_id: int,
+            page: int = None
+    ) -> Generator[Any]:
         try:
             return next(
                 self.query_statement(
-                    self._select_flash_card_from_id(flash_card_id))
+                    self._select_flash_card_from_id(flash_card_id),
+                    FlashCard,
+                    page
+                )
             )
         except exc.SQLAlchemyError as e:
             logger.critical(
@@ -131,17 +138,17 @@ class GetFlashCardDBAPI(DBEngineAbstract):
 
     def query_flash_cards_generator(
             self,
-    ) -> Row[Any]:
+    ) -> Generator[Any]:
         try:
             return self.query_statement(
                     self._select_all_flash_card_sql()
             )
         except exc.SQLAlchemyError as e:
             logger.critical(
-                f"Problem wile select flash card {flash_card_id} -> {e}"
+                f"Problem wile select flash cards -> {e}"
             )
             raise FlashCardHttpException(
-                detail=f"Can not select flash card {flash_card_id}",
+                detail=f"Can not select flash cards",
                 status_code=400
             )
 

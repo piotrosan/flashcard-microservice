@@ -1,9 +1,9 @@
 import logging
-from typing import Iterable, List, cast
+from typing import Iterable, List, cast, Generator
 
 from typing_extensions import Any
 
-from sqlalchemy import select, Row, text
+from sqlalchemy import select, text
 from sqlalchemy import exc
 
 from infrastructure.database.api.engine import DBEngine, DBEngineAbstract
@@ -20,11 +20,6 @@ class CreateTestKnowledgeDBAPI(DBEngineAbstract):
             self,
             test_knoledge_data: dict
     ) -> Iterable[TestKnowledge]:
-        """
-        :param external_login_data:
-        :param user_data:
-        :return: list of id of created models
-        """
         try:
             test_knowledge = TestKnowledge(**test_knoledge_data)
             return self.insert_objects([test_knowledge])
@@ -56,13 +51,15 @@ class GetTestKnowledgeDBAPI(DBEngineAbstract):
 
         return tmp_select
 
-
-    def _select_test_knowledge_from_id_sql(self, id_test_knowledge: int):
+    def _select_test_knowledge_from_id_sql(
+            self,
+            id_test_knowledge: int
+    ):
         try:
             return select(TestKnowledge).where(
                 cast(
                     "ColumnElement[bool]",
-                    TestKnowledge.id == str(id_test_knowledge)
+                    TestKnowledge.id == id_test_knowledge
                 )
             )
         except exc.SQLAlchemyError as e:
@@ -81,7 +78,7 @@ class GetTestKnowledgeDBAPI(DBEngineAbstract):
             return select(FlashCard, TestKnowledge).where(
                 cast(
                     "ColumnElement[bool]",
-                    TestKnowledge.id == str(id_knowledge)
+                    TestKnowledge.id == id_knowledge
                 )
             )
         except exc.SQLAlchemyError as e:
@@ -96,7 +93,7 @@ class GetTestKnowledgeDBAPI(DBEngineAbstract):
             self,
             column: List[str] = None,
             order: List[str] = None
-    ) -> Row[Any]:
+    ) -> Generator[Any]:
         try:
             return self.query_statement(
                 self._select_all_test_knowledge_sql(column, order)
@@ -111,7 +108,7 @@ class GetTestKnowledgeDBAPI(DBEngineAbstract):
     def query_test_knowledge_with_flash_cards(
             self,
             id_knowledge: int
-    ) -> Row[Any]:
+    ) -> Generator[Any]:
         try:
             return self.query_statement(
                 self._select_test_knowledge_with_all_flash_cards_sql(
@@ -130,7 +127,7 @@ class GetTestKnowledgeDBAPI(DBEngineAbstract):
     def query_test_knowledge_from_id(
             self,
             id_knowledge: int
-    ) -> Row[Any]:
+    ) -> Generator[Any]:
         try:
             return self.query_statement(
                 self._select_test_knowledge_from_id_sql(id_knowledge)
