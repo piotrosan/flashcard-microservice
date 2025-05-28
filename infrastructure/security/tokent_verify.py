@@ -1,4 +1,4 @@
-from business.security.token_verify_provider import TokenVerifyProvider
+from domain.security.token_verify_provider import TokenVerifyProvider
 from infrastructure.security.token.requester import TokenRequester
 
 

@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Path
+from fastapi import APIRouter, Depends, HTTPException, Path, Request
 
 # from ..dependencies import get_token_header
 
@@ -14,7 +14,14 @@ router = APIRouter(
 )
 
 @router.get("/{flash_card_id}")
-async def get_(flash_card_id: Annotated[int, Path()], request):
+async def get_fash_card(
+        flash_card_id: Annotated[int, Path()],
+        request: Request
+):
+    pass
+
+@router.get("/")
+async def list_fash_cards(request: Request):
     pass
 
 @router.put(
