@@ -1,9 +1,9 @@
 from typing import Annotated
 from fastapi import APIRouter, HTTPException, Path, Request, Body
 
-from infrastructure.database.api.test_knowledge_database_api import \
+from infrastructure.database.sql.api.test_knowledge_database_api import \
     TestKnowledgeDBAPI
-from infrastructure.routers.models.knowledge import CreateKnowledgeRequest
+from infrastructure.routers.models.request.knowledge import CreateKnowledgeRequest
 from domain.test_knowledge.service import TestKnowledgeService
 from infrastructure.routers.models.response.knowledge import KnowledgeResponse
 
@@ -18,7 +18,7 @@ router = APIRouter(
 
 
 @router.get("/{test_id}")
-async def get_test(
+async def get_test_for_user(
         test_id: Annotated[int, Path()],
         request: Request
 ) -> KnowledgeResponse:
@@ -31,7 +31,7 @@ async def get_test(
 
 
 @router.get("/{page_id}")
-async def list_test(
+async def list_test_for_user(
         page_id: Annotated[int, Path()],
         request: Request
 ) -> KnowledgeResponse:

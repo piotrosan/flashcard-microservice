@@ -1,6 +1,3 @@
-from infrastructure.security.token.exception.verify_exception import \
-    TokenExpired, TokenDifferentAppId
-from infrastructure.security.token.token import Token
 import logging
 
 logger = logging.getLogger("root")

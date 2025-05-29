@@ -1,4 +1,4 @@
-from infrastructure.database.api.flash_card_database_api import FlashCardDBAPI
+from infrastructure.database.sql.api.flash_card_database_api import FlashCardDBAPI
 
 
 class FashCardService:

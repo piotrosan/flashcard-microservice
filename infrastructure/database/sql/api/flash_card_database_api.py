@@ -6,11 +6,11 @@ from typing_extensions import Any
 from sqlalchemy import select, text
 from sqlalchemy import exc
 
-from infrastructure.database.api.engine import DBEngine, DBEngineAbstract
+from infrastructure.database.sql.api.engine import DBEngine, DBEngineAbstract
 from infrastructure.database.sql.models.test_knowledge import TestKnowledge, \
     AssociationKnowledgeFlashCard
 from infrastructure.database.sql.models.flash_card import FlashCard
-from infrastructure.exception.flash_card_exception import FlashCardHttpException
+from infrastructure.database.sql.api.exception.flash_card_exception import FlashCardHttpException
 
 
 logger = logging.getLogger("root")

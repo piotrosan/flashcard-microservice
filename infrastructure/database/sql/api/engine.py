@@ -5,13 +5,13 @@ from typing_extensions import Any
 from typing import Sequence, Iterable, Generator
 from sqlalchemy import exc
 
-from infrastructure.database.api import session
-import infrastructure.database.api as reload_session
+from infrastructure.database.sql.api import session
+import infrastructure.database.sql.api as reload_session
 from sqlalchemy import Select, Update, Row
 
-from infrastructure.database.api.pagination import Pagination
+from infrastructure.database.sql.api.pagination import Pagination
 from infrastructure.database.sql.models.base import Base
-from infrastructure.exception.generic_exception import RawStatementHttpException
+from infrastructure.database.sql.api.exception.generic_exception import RawStatementHttpException
 
 logger = logging.getLogger("root")
 
@@ -89,7 +89,7 @@ class DBEngine(DBEngineAbstract):
     def raw_query_generator(
             self,
             select_query: Select[Any],
-    ) -> Row[Any]:
+    ) -> Generator[Any]:
         try:
             return self.query_statement(select_query)
         except exc.SQLAlchemyError as e:

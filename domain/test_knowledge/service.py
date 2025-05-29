@@ -1,4 +1,4 @@
-from infrastructure.database.api.test_knowledge_database_api import \
+from infrastructure.database.sql.api.test_knowledge_database_api import \
     TestKnowledgeDBAPI
 
 
@@ -12,19 +12,31 @@ class TestKnowledgeService:
             id_knowledge
         )
 
-    def get_flash_card_for_test_and_user(
+    def get_flash_cards_for_test_and_user(
             self,
             hash_identifier: str,
-            test_id: int
+            id_knowledge: int
     ):
-        self.infrastructure_db.query_test_knowledge_from_id()
+        return self.infrastructure_db.query_test_with_flash_cards_for_user(
+            id_knowledge,
+            hash_identifier
+        )
 
-    def get_random_test_for_user(self, hash_identifier: str):
+    def get_random_test_for_user(
+            self,
+            hash_identifier: str
+    ):
         pass
 
-    def list_test(self):
+    def list_test(
+            self,
+            page_id: int
+    ):
         pass
 
-    def list_test_for_user(self, hash_identifier: str, page_id: int):
+    def list_test_for_user(
+            self,
+            hash_identifier: str,
+            page_id: int
+    ):
         pass
-
