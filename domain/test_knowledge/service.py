@@ -1,5 +1,6 @@
 from infrastructure.database.sql.api.test_knowledge_database_api import \
     TestKnowledgeDBAPI
+from infrastructure.supporter.generic import random_from
 
 
 class TestKnowledgeService:
@@ -17,7 +18,7 @@ class TestKnowledgeService:
             hash_identifier: str,
             id_knowledge: int
     ):
-        return self.infrastructure_db.query_test_with_flash_cards_for_user(
+        return self.infrastructure_db.query_test_knowledge_with_flash_cards_for_user(
             id_knowledge,
             hash_identifier
         )
@@ -26,17 +27,28 @@ class TestKnowledgeService:
             self,
             hash_identifier: str
     ):
-        pass
+        count = self.infrastructure_db.get_count_test_knowledge()
+        id_knowledge = random_from(count)
+        return self.infrastructure_db.query_test_knowledge_with_flash_cards_for_user(
+            id_knowledge,
+            hash_identifier
+        )
+
 
     def list_test(
             self,
             page_id: int
     ):
-        pass
+        return self.infrastructure_db.query_all_test_knowledge_paginate_generator(
+            page=page_id
+        )
 
     def list_test_for_user(
             self,
             hash_identifier: str,
             page_id: int
     ):
-        pass
+        return self.infrastructure_db.query_tests_for_user_paginate(
+            hash_identifier,
+            page_id
+        )

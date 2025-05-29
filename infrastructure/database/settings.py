@@ -1,1 +1,1 @@
-SQLALCHEMY_DATABASE_URI = ""
+SQLALCHEMY_DATABASE_URI = "postgresql://postgres:example@localhost/flash_card"

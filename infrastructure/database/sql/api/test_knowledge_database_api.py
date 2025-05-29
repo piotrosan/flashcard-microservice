@@ -97,15 +97,41 @@ class GetTestKnowledgeDBAPIMixin(DBEngineAbstract):
                 status_code=400
             )
 
-    def _select_test_knowledge_with_all_flash_cards_sql(
+    def _select_tests_knowledge_for_user_sql(
             self,
-            id_knowledge: int
+            user_identifier: str
+    ):
+        try:
+            return select(TestKnowledge).where(
+                cast(
+                    "ColumnElement[bool]",
+                    TestKnowledge.user_identifier == user_identifier
+                ),
+            )
+        except exc.SQLAlchemyError as e:
+            logger.critical(
+                f"Problem wile select flash card from id {e}")
+            raise TestKnowledgeHttpException(
+                detail="Can not create select test knowledge",
+                status_code=400
+            )
+
+    def _select_test_knowledge_with_all_flash_cards_for_user_sql(
+            self,
+            id_knowledge: int,
+            hash_identifier: str
     ):
         try:
             return select(FlashCard, TestKnowledge).where(
-                cast(
-                    "ColumnElement[bool]",
-                    TestKnowledge.id == id_knowledge
+                and_(
+                    cast(
+                        "ColumnElement[bool]",
+                        TestKnowledge.id == id_knowledge
+                    ),
+                    cast(
+                        "ColumnElement[bool]",
+                        TestKnowledge.hash_identifier == hash_identifier
+                    ),
                 )
             )
         except exc.SQLAlchemyError as e:
@@ -116,7 +142,7 @@ class GetTestKnowledgeDBAPIMixin(DBEngineAbstract):
                 status_code=400
             )
 
-    def query_all_test_knowledge_generator(
+    def query_all_tests_knowledge_generator(
             self,
             column: List[str] = None,
             order: List[str] = None
@@ -132,14 +158,34 @@ class GetTestKnowledgeDBAPIMixin(DBEngineAbstract):
                 status_code=400
             )
 
-    def query_test_knowledge_with_flash_cards(
+    def query_all_test_knowledge_paginate_generator(
             self,
-            id_knowledge: int
+            column: List[str] = None,
+            order: List[str] = None,
+            page: int = None
     ) -> Generator[Any]:
         try:
             return self.query_statement(
-                self._select_test_knowledge_with_all_flash_cards_sql(
-                    id_knowledge
+                self._select_all_test_knowledge_sql(column, order),
+                page=page
+            )
+        except exc.SQLAlchemyError as e:
+            logger.critical("Problem wile select all test knowledge")
+            raise TestKnowledgeHttpException(
+                detail="Can not select test knowledge",
+                status_code=400
+            )
+
+    def query_test_knowledge_with_flash_cards_for_user(
+            self,
+            id_knowledge: int,
+            hash_identifier: str,
+    ) -> Generator[Any]:
+        try:
+            return self.query_statement(
+                self._select_test_knowledge_with_all_flash_cards_for_user_sql(
+                    id_knowledge,
+                    hash_identifier
                 )
             )
         except exc.SQLAlchemyError as e:
@@ -168,7 +214,7 @@ class GetTestKnowledgeDBAPIMixin(DBEngineAbstract):
                 status_code=400
             )
 
-    def query_test_with_flash_cards_for_user(
+    def query_test_for_user(
             self,
             id_knowledge: int,
             hash_identifier: str
@@ -186,6 +232,30 @@ class GetTestKnowledgeDBAPIMixin(DBEngineAbstract):
             )
             raise TestKnowledgeHttpException(
                 detail=f"Can not select test knowledge {id_knowledge}",
+                status_code=400
+            )
+
+
+    def query_tests_for_user_paginate(
+            self,
+            hash_identifier: str,
+            page: int = None
+    ) -> Generator[Any]:
+        try:
+            return self.query_statement(
+                self._select_tests_knowledge_for_user_sql(
+                    hash_identifier
+                ),
+                page=page
+            )
+        except exc.SQLAlchemyError as e:
+            logger.critical(
+                f"Problem wile select tests knowledge "
+                f"for user {hash_identifier} -> {e}"
+            )
+            raise TestKnowledgeHttpException(
+                detail=f"Can not select tests knowledge "
+                       f"for user {hash_identifier}",
                 status_code=400
             )
 
