@@ -1,4 +1,4 @@
-from domain.security.token_verify_provider import TokenVerifyProvider
+from domain.security.service import TokenVerifyService
 from infrastructure.security.token.requester import TokenRequester
 
 
@@ -6,7 +6,7 @@ class TokenVerify:
 
     def __init___(
             self,
-            verify_provider: TokenVerifyProvider,
+            verify_provider: TokenVerifyService,
             token_decoder: TokenRequester
     ):
         self.verify_provider = verify_provider
@@ -18,7 +18,7 @@ class TokenVerify:
     @classmethod
     def create(
             cls,
-            verify_provider: TokenVerifyProvider,
+            verify_provider: TokenVerifyService,
             token_decoder: TokenRequester
     ):
         return cls(verify_provider, token_decoder)

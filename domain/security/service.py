@@ -2,7 +2,7 @@ import logging
 
 logger = logging.getLogger("root")
 
-class TokenVerifyProvider:
+class TokenVerifyService:
 
     @classmethod
     def verify(
