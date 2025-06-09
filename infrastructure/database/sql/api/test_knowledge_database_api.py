@@ -1,5 +1,5 @@
 import logging
-from typing import Iterable, List, cast, Generator
+from typing import Iterable, List, cast, Generator, Iterator
 
 from typing_extensions import Any
 
@@ -146,7 +146,7 @@ class GetTestKnowledgeDBAPIMixin(DBEngineAbstract):
             self,
             column: List[str] = None,
             order: List[str] = None
-    ) -> Generator[Any]:
+    ) -> Iterator[Any]:
         try:
             return self.query_statement(
                 self._select_all_test_knowledge_sql(column, order)
@@ -163,7 +163,7 @@ class GetTestKnowledgeDBAPIMixin(DBEngineAbstract):
             column: List[str] = None,
             order: List[str] = None,
             page: int = None
-    ) -> Generator[Any]:
+    ) -> Iterator[Any]:
         try:
             return self.query_statement(
                 self._select_all_test_knowledge_sql(column, order),
@@ -180,7 +180,7 @@ class GetTestKnowledgeDBAPIMixin(DBEngineAbstract):
             self,
             id_knowledge: int,
             hash_identifier: str,
-    ) -> Generator[Any]:
+    ) -> Iterator[Any]:
         try:
             return self.query_statement(
                 self._select_test_knowledge_with_all_flash_cards_for_user_sql(
@@ -200,7 +200,7 @@ class GetTestKnowledgeDBAPIMixin(DBEngineAbstract):
     def query_test_knowledge_from_id(
             self,
             id_knowledge: int
-    ) -> Generator[Any]:
+    ) -> Iterator[Any]:
         try:
             return self.query_statement(
                 self._select_test_knowledge_from_id_sql(id_knowledge)
@@ -218,7 +218,7 @@ class GetTestKnowledgeDBAPIMixin(DBEngineAbstract):
             self,
             id_knowledge: int,
             hash_identifier: str
-    ) -> Generator[Any]:
+    ) -> Iterator[Any]:
         try:
             return self.query_statement(
                 self._select_test_knowledge_from_id_and_user_sql(
@@ -240,7 +240,7 @@ class GetTestKnowledgeDBAPIMixin(DBEngineAbstract):
             self,
             hash_identifier: str,
             page: int = None
-    ) -> Generator[Any]:
+    ) -> Iterator[Any]:
         try:
             return self.query_statement(
                 self._select_tests_knowledge_for_user_sql(

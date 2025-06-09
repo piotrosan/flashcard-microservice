@@ -1,5 +1,5 @@
 import logging
-from typing import Iterable, List, cast, Generator
+from typing import Iterable, List, cast, Generator, Iterator
 
 from typing_extensions import Any
 
@@ -100,7 +100,7 @@ class GetFlashCardDBAPI(DBEngineAbstract):
             column: List[str] = None,
             order: List[str] = None,
             page: int = None
-    ) -> Generator[Any]:
+    ) -> Iterator[Any]:
         try:
             return self.query_statement(
                 self._select_all_flash_card_sql(column, order),
@@ -118,7 +118,7 @@ class GetFlashCardDBAPI(DBEngineAbstract):
             self,
             flash_card_id: int,
             page: int = None
-    ) -> Generator[Any]:
+    ) -> Iterator[Any]:
         try:
             return next(
                 self.query_statement(
@@ -138,7 +138,7 @@ class GetFlashCardDBAPI(DBEngineAbstract):
 
     def query_flash_cards_generator(
             self,
-    ) -> Generator[Any]:
+    ) -> Iterator[Any]:
         try:
             return self.query_statement(
                     self._select_all_flash_card_sql()

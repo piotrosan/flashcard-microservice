@@ -2,7 +2,7 @@ import abc
 import logging
 from importlib import reload
 from typing_extensions import Any
-from typing import Sequence, Iterable, Generator
+from typing import Sequence, Iterable, Generator, Iterator
 from sqlalchemy import exc
 
 from infrastructure.database.sql.api import session
@@ -24,7 +24,7 @@ class DBEngineAbstract(abc.ABC):
             select_query: Select[Any],
             model: type[Base] = None,
             page: int = None
-    ) -> Generator[Any]:
+    ) -> Iterator[Any]:
         raise NotImplemented()
 
     def insert_objects(
@@ -47,7 +47,7 @@ class DBEngine(DBEngineAbstract):
             select_query: Select[Any],
             model: Base = None,
             page: int = None
-    ) -> Generator[Any]:
+    ) -> Iterator[Any]:
         if page:
             pagination = Pagination(select_query, model)
             select_query = pagination.get_page(page)
@@ -89,7 +89,7 @@ class DBEngine(DBEngineAbstract):
     def raw_query_generator(
             self,
             select_query: Select[Any],
-    ) -> Generator[Any]:
+    ) -> Iterator[Any]:
         try:
             return self.query_statement(select_query)
         except exc.SQLAlchemyError as e:
