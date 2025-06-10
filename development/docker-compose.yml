@@ -9,9 +9,9 @@ services:
     environment:
       POSTGRES_PASSWORD: example
       POSTGRES_DB: flash_card
-      PGDATA: /data/postgres
+      PGDATA: /data/postgres/db_flash
     volumes:
-      - db_flash:/data/postgres
+      - db_flash:/data/postgres/db_flash
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres -d flash_card" ]
       interval: 10s
@@ -19,26 +19,5 @@ services:
       start_period: 30s
       timeout: 10s
 
-  adminer_db_identity:
-    image: adminer
-    restart: always
-    ports:
-      - 8081:8081
-
-#  app:
-#    networks:
-#      - flash_card
-
-#  cache:
-#    image: redis:6.2-alpine
-#    restart: always
-#    ports:
-#      - '6379:6379'
-#    # command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
-#    volumes:
-#      - cache:/data
-
 volumes:
   db_flash:
-#  cache:
-#    driver: local

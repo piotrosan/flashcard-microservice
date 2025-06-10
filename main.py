@@ -4,17 +4,19 @@ from starlette.middleware import Middleware
 from starlette.middleware.authentication import AuthenticationMiddleware
 
 from infrastructure.security.middleware.auth import TokenAuthBackend
-from infrastructure.routers import flash_card
+from infrastructure.routers import flash_card, user_permission
 from settings import DOMAIN, PORT
 
-middlewares = [
-    Middleware(AuthenticationMiddleware, backends=TokenAuthBackend()),
-]
+# middlewares = [
+#     Middleware(AuthenticationMiddleware, backend=TokenAuthBackend()),
+# ]
+#
+# app = FastAPI(middleware=middlewares)
 
-app = FastAPI(middleware=middlewares)
-
+app = FastAPI()
 # include
 app.include_router(flash_card.router)
+app.include_router(user_permission.router)
 
 
 @app.get("/")

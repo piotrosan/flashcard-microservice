@@ -1,5 +1,6 @@
-from starlette.authentication import AuthenticationBackend, AuthenticationError, \
-    SimpleUser
+from starlette.authentication import AuthenticationBackend
+
+from infrastructure.database.sql.models.auth import User
 from infrastructure.security.middleware.exception.auth_exception import \
     TokenAuthException
 from infrastructure.security.token.requester import TokenRequester
@@ -23,4 +24,4 @@ class TokenAuthBackend(AuthenticationBackend):
                 detail='Invalid JWT Token.',
                 status_code=400
             )
-        return None, SimpleUser(username=payload['user_identifier'])
+        return None, User(hash_identifier=payload['user_identifier'])
