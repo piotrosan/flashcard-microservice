@@ -20,8 +20,14 @@ class AuthService:
             full_permission_data.model_dump(mode='Python')
         )
 
-    def get_random_flash_card(self):
-        pass
+    def get_user_with_permission(self, hash_identifier: str) -> User:
+        res =  next(
+            self.infrastructure_db.query_user_with_permission_paginate_generator(
+                hash_identifier
+            )
+        )
+        return res[0]
+
 
     def get_flash_card(self, flash_card: int):
         pass

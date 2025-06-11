@@ -33,16 +33,16 @@ class AssociationKnowledgeFlashCard(Base):
 
     __tablename__ = "association_knowledge_flash_card"
 
-    left_id: Mapped[int] = mapped_column(
+    test_knowledge_id: Mapped[int] = mapped_column(
         ForeignKey("test_knowledge.id"), primary_key=True
     )
-    right_id: Mapped[int] = mapped_column(
+    flash_card_id: Mapped[int] = mapped_column(
         ForeignKey("flash_card.id"), primary_key=True
     )
-    child: Mapped["FlashCard"] = relationship(
-        back_populates="test_knowledge")
-    parent: Mapped["TestKnowledge"] = relationship(
-        back_populates="flash_cards")
+    test_knowledge: Mapped["TestKnowledge"] = relationship(
+        back_populates="asso_test_knowledge")
+    flash_card: Mapped["FlashCard"] = relationship(
+        back_populates="asso_flash_card")
 
 
 class TestKnowledge(Base):
@@ -55,6 +55,6 @@ class TestKnowledge(Base):
     create_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, onupdate=func.now())
 
-    flash_cards: Mapped[
+    asso_test_knowledge: Mapped[
         List["AssociationKnowledgeFlashCard"]
-    ] = relationship(back_populates="child")
+    ] = relationship(back_populates="test_knowledge")

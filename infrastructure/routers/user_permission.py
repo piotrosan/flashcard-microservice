@@ -29,21 +29,19 @@ async def set_user_group_and_permission(
     up_db = UserPermissionDBAPI()
     ats = AuthService(up_db)
     user: User = ats.save_user_permission(full_permission_data)
-
+    user_with_perm = ats.get_user_with_permission(
+        user.hash_identifier)
     return UserPermissionResponse(
-        hash_identifier=user.hash_identifier,
+        hash_identifier=user_with_perm.hash_identifier,
         user_groups=[
             UserGroup(
                 name=g.name,
                 roles=[
-                    Role(name=r.name) for r in g.role
+                    Role(name=r.name) for r in g.roles
                 ]
-            ) for g in user.user_groups]
+            ) for g in user_with_perm.user_groups]
     )
 
-@router.get("/")
-async def list_fash_cards(request: Request):
-    pass
 
 @router.put(
     "/{item_id}",

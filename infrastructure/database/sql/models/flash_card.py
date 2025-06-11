@@ -1,3 +1,5 @@
+from typing import List
+
 from infrastructure.database.sql.models.base import Base
 from sqlalchemy import (
     Column,
@@ -22,5 +24,7 @@ class FlashCard(Base):
     create_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, onupdate=func.now())
 
-    test_knowledge: Mapped["AssociationKnowledgeFlashCard"] = relationship(
-        back_populates="parent")
+    asso_flash_card: Mapped[
+        List["AssociationKnowledgeFlashCard"]
+    ] = relationship(
+        back_populates="flash_card")

@@ -2,7 +2,7 @@ import abc
 import logging
 from importlib import reload
 from typing_extensions import Any
-from typing import Sequence, Iterable, Generator, Iterator
+from typing import Sequence, Iterable, Generator, Iterator, List
 from sqlalchemy import exc
 
 from infrastructure.database.sql.api import session
@@ -16,6 +16,8 @@ from infrastructure.database.sql.api.exception.generic_exception import RawState
 logger = logging.getLogger("root")
 
 class DBEngineAbstract(abc.ABC):
+
+
     def reload_session(self):
         raise NotImplemented()
 
@@ -53,7 +55,7 @@ class DBEngine(DBEngineAbstract):
             select_query = pagination.get_page(page)
 
         with session as s:
-            for row in s.execute(select_query):
+            for row in s.execute(select_query).unique():
                 yield row
 
     def insert_objects(
