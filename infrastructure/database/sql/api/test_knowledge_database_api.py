@@ -1,6 +1,7 @@
 import logging
 from typing import Iterable, List, cast, Generator, Iterator
 
+from sqlalchemy.engine.result import Result
 from typing_extensions import Any
 
 from sqlalchemy import select, text, and_
@@ -200,11 +201,12 @@ class GetTestKnowledgeDBAPIMixin(DBEngineAbstract):
     def query_test_knowledge_from_id(
             self,
             id_knowledge: int
-    ) -> Iterator[Any]:
+    ) -> TestKnowledge:
         try:
-            return self.query_statement(
+            result: Result =  next(self.query_statement(
                 self._select_test_knowledge_from_id_sql(id_knowledge)
-            )
+            ))
+            return result.scalar()
         except exc.SQLAlchemyError as e:
             logger.critical(
                 f"Problem wile select test knowledge {id_knowledge} -> {e}"
@@ -261,7 +263,30 @@ class GetTestKnowledgeDBAPIMixin(DBEngineAbstract):
 
 
 class UpdateKnowledgeDBAPIMixin(DBEngineAbstract):
-    pass
+
+    def query_tests_for_user_paginate(
+            self,
+            hash_identifier: str,
+            page: int = None
+    ) -> Iterator[Any]:
+        try:
+            return self.query_statement(
+                self._select_tests_knowledge_for_user_sql(
+                    hash_identifier
+                ),
+                page=page
+            )
+        except exc.SQLAlchemyError as e:
+            logger.critical(
+                f"Problem wile select tests knowledge "
+                f"for user {hash_identifier} -> {e}"
+            )
+            raise TestKnowledgeHttpException(
+                detail=f"Can not select tests knowledge "
+                       f"for user {hash_identifier}",
+                status_code=400
+            )
+
 
 
 class TestKnowledgeDBAPI(

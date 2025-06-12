@@ -2,6 +2,7 @@ from typing import List, Any
 
 from infrastructure.database.sql.api.test_knowledge_database_api import \
     TestKnowledgeDBAPI
+from infrastructure.database.sql.models import TestKnowledge
 from infrastructure.routers.models.request.knowledge import \
     CreateKnowledgeRequest
 from infrastructure.supporter.generic import random_from
@@ -71,4 +72,9 @@ class TestKnowledgeService:
         return self.infrastructure_db.query_tests_for_user_paginate(
             hash_identifier,
             page_id
+        )
+
+    def update_test_from_id(self, id_knowledge: int, data: dict):
+        return self.infrastructure_db.query_test_knowledge_from_id(
+            id_knowledge
         )

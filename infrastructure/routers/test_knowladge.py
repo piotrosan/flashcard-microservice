@@ -20,7 +20,7 @@ router = APIRouter(
 )
 
 
-@router.get("/{test_id}")
+@router.get("/{test_id}", response_model=KnowledgeResponse)
 async def get_test_for_user(
         id_knowledge: Annotated[int, Path()],
         request: Request
@@ -34,7 +34,7 @@ async def get_test_for_user(
     return KnowledgeResponse()
 
 
-@router.get("/{page_id}")
+@router.get("/{page_id}", response_model=KnowledgeResponse)
 async def list_test_for_user(
         page_id: Annotated[int, Path()],
         request: Request
@@ -48,7 +48,7 @@ async def list_test_for_user(
     return KnowledgeResponse()
 
 
-@router.get("/{test_id}")
+@router.get("/{test_id}", response_model=KnowledgeResponse)
 async def get_test(
         id_knowledge: Annotated[int, Path()],
         request: Request
@@ -60,7 +60,7 @@ async def get_test(
     return KnowledgeResponse()
 
 
-@router.post("/")
+@router.post("/", response_model=KnowledgeResponse)
 async def create_test(
         create_date: Annotated[CreateKnowledgeRequest, Body()],
         request: Request
@@ -71,14 +71,13 @@ async def create_test(
     saved_object: TestKnowledge = service.insert(create_date).pop()
     return KnowledgeResponse(**saved_object.__dict__)
 
-# @router.put(
-#     "/{item_id}",
-#     tags=["custom"],
-#     responses={403: {"description": "Operation forbidden"}},
-# )
-# async def update_item(item_id: str):
-#     if item_id != "plumbus":
-#         raise HTTPException(
-#             status_code=403, detail="You can only update the item: plumbus"
-#         )
-#     return {"item_id": item_id, "name": "The great Plumbus"}
+@router.put(
+    "/{test_id}",
+    response_model=KnowledgeResponse
+)
+async def update_test(item_id: str):
+    dbapi = TestKnowledgeDBAPI()
+    service = TestKnowledgeService(dbapi)
+    saved_object: TestKnowledge = service.insert
+
+    return {"item_id": item_id, "name": "The great Plumbus"}
