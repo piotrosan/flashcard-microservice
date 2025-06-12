@@ -2,7 +2,7 @@ import abc
 import logging
 from importlib import reload
 from typing_extensions import Any
-from typing import Sequence, Iterable, Generator, Iterator, List
+from typing import Sequence, Iterable, Generator, Iterator, List, Dict
 from sqlalchemy import exc
 
 from infrastructure.database.sql.api import session
@@ -33,6 +33,13 @@ class DBEngineAbstract(abc.ABC):
             self,
             objects: Iterable[Any]
     ) -> Iterable[Any]:
+        raise NotImplemented()
+
+    def update_object(
+            self,
+            obj: type[Base],
+            mappings: Dict[str, Any]
+    ) -> type[Base]:
         raise NotImplemented()
 
     def _update_statement(self, upd: Update[Any]):
@@ -66,6 +73,16 @@ class DBEngine(DBEngineAbstract):
             s.add_all(objects)
             s.commit()
         return objects
+
+    def update_object(
+            self,
+            obj: type[Base],
+            mappings: Dict[str, Any]
+    ) -> type[Base]:
+        with session as s:
+            s.bulk_update_mappings(obj, mappings)
+            s.commit()
+        return obj
 
     def _update_statement(self, upd: Update[Any]):
         with session as s:

@@ -4,10 +4,16 @@ from pydantic import BaseModel
 class Role(BaseModel):
     name: str
 
-class UserGroup(BaseModel):
+class UserGroupAndRole(BaseModel):
     name: str
     roles: List[Role]
 
+
 class FullPermissionDataRequest(BaseModel):
-    user_groups: List[UserGroup]
     hash_identifier: str
+    user_groups: List[UserGroupAndRole]
+
+
+class UserAndGroup(BaseModel):
+    hash_identifier: str
+    name: List[str]

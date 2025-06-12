@@ -3,9 +3,9 @@ from typing import List, Iterable
 from infrastructure.database.sql.api.flash_card_database_api import FlashCardDBAPI
 from infrastructure.database.sql.api.user_permission_database import \
     UserPermissionDBAPI
-from infrastructure.database.sql.models.auth import User
+from infrastructure.database.sql.models.auth import User, UserGroup
 from infrastructure.routers.models.request.permission import \
-    FullPermissionDataRequest
+    FullPermissionDataRequest, UserGroupAndRole, UserAndGroup
 
 
 class AuthService:
@@ -28,6 +28,23 @@ class AuthService:
         )
         return res[0]
 
+    def save_groups_and_roles(
+            self,
+            groups_and_role: List[UserGroupAndRole]
+    ) -> List[UserGroup]:
+        return self.infrastructure_db.insert_group_and_role(
+            groups_and_role
+        )
 
-    def get_flash_card(self, flash_card: int):
-        pass
+
+    def add_user_to_group(
+            self,
+            user_and_groups: UserAndGroup
+    ) -> int:
+        ug: List[UserGroup] = self.infrastructure_db.query_groups_for_names(
+            user_and_groups.name
+        )
+        user: User = self.infrastructure_db.query_user_from_hash(
+            user_and_groups.hash_identifier)
+        amount_of_added = self.infrastructure_db.add_user_to_group(ug, user)
+        return amount_of_added

@@ -1,6 +1,7 @@
 import logging
 from typing import Iterable, List, cast, Generator, Iterator
 
+from sqlalchemy.engine.result import Result
 from sqlalchemy.orm import contains_eager, joinedload
 from typing_extensions import Any
 
@@ -13,6 +14,7 @@ from infrastructure.database.sql.api.exception.auth_exception import \
 from infrastructure.database.sql.models import UserGroup
 from infrastructure.database.sql.models.auth import User, Role, AssociationUserGroupUser
 from infrastructure.database.sql.api.exception.test_knowledge_exception import TestKnowledgeHttpException
+from infrastructure.routers.models.request.permission import UserGroupAndRole
 
 logger = logging.getLogger("root")
 
@@ -54,6 +56,67 @@ class CreateUserPermissionsDBAPIMixin(DBEngineAbstract):
             )
             raise TestKnowledgeHttpException(
                 detail="Can not insert user permission",
+                status_code=400
+            )
+
+    def insert_group_and_role(
+            self,
+            groups_and_role: List[UserGroupAndRole],
+    ) -> List[UserGroup]:
+        try:
+            groups = []
+            for g in groups_and_role:
+                ug = UserGroup(name=g.name)
+                list_roles = []
+                for r in g.roles:
+                    ro = Role(
+                        name=r.name,
+                        user_group_id=ug
+                    )
+                    list_roles.append(ro)
+                ug.roles = list_roles
+                groups.append(ug)
+
+            self.insert_objects(groups)
+            return groups
+
+        except exc.SQLAlchemyError as e:
+            g: UserGroupAndRole
+            logger.critical(
+                f"Problem wile insert user group with role -> {e}"
+                f"data -> {[
+                    g.model_dump(mode='python') for g in groups_and_role
+                ]}"
+            )
+            raise TestKnowledgeHttpException(
+                detail="Can not insert user group with role",
+                status_code=400
+            )
+
+    def add_user_to_group(
+            self,
+            groups_and_roles: List[UserGroup],
+            user: User
+    ) -> int:
+        try:
+            associations = [
+                AssociationUserGroupUser(user=user, user_group=g)
+                for g in groups_and_roles
+            ]
+
+            self.insert_objects(associations)
+            return len(associations)
+
+        except exc.SQLAlchemyError as e:
+            g: UserGroupAndRole
+            logger.critical(
+                f"Problem wile add user to group -> {e}"
+                f" -> {[
+                    g.model_dump(mode='python') for g in groups_and_roles
+                ]}"
+            )
+            raise TestKnowledgeHttpException(
+                detail="Can not add user to group",
                 status_code=400
             )
 
@@ -125,6 +188,74 @@ class GetUserPermissionDBAPIMixin(DBEngineAbstract):
                 detail="Can not select user",
                 status_code=400
             )
+
+
+    def _select_user_groups_for_names_sql(
+            self,
+            groups: List[str]
+    ):
+        return (
+            select(UserGroup)
+            .where(
+                cast(
+                    "ColumnElement[bool]",
+                    UserGroup.name.in_(groups)
+                )
+            )
+        )
+
+
+    def query_groups_for_names(
+            self,
+            groups: List[str],
+            page=None
+    ) -> List[UserGroup]:
+        try:
+            return list(self.query_statement(
+                self._select_user_groups_for_names_sql(groups),
+                page=page
+            ))
+        except exc.SQLAlchemyError as e:
+            logger.critical(
+                "Problem wile select query"
+                f" user groups - {e}")
+            raise AuthHttpException(
+                detail="Can not select user groups",
+                status_code=400
+            )
+
+
+    def _select_user_for_hash_sql(
+            self,
+            hash_identifier: str
+    ):
+        return (
+            select(User)
+            .where(
+                cast(
+                    "ColumnElement[bool]",
+                    User.hash_identifier == hash_identifier
+                )
+            )
+        )
+
+    def query_user_from_hash(self, hash_identifier: str, page=None) -> Any:
+        try:
+            row: Result = next(self.query_statement(
+                self._select_user_for_hash_sql(hash_identifier),
+                page=page
+            ))
+            return row.scalar()
+        except exc.SQLAlchemyError as e:
+            logger.critical(
+                "Problem wile select query"
+                f" user - {e}")
+            raise AuthHttpException(
+                detail="Can not select user",
+                status_code=400
+            )
+
+
 
 class UpdateUserPermissionDBAPIMixin(DBEngineAbstract):
     pass
