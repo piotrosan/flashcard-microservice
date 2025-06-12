@@ -3,7 +3,7 @@ from typing import List, Iterable
 from infrastructure.database.sql.api.flash_card_database_api import FlashCardDBAPI
 from infrastructure.database.sql.api.user_permission_database import \
     UserPermissionDBAPI
-from infrastructure.database.sql.models.auth import User, UserGroup
+from infrastructure.database.sql.models.auth import User, UserGroup, Role
 from infrastructure.routers.models.request.permission import \
     FullPermissionDataRequest, UserGroupAndRole, UserAndGroup
 
@@ -48,3 +48,20 @@ class AuthService:
             user_and_groups.hash_identifier)
         amount_of_added = self.infrastructure_db.add_user_to_group(ug, user)
         return amount_of_added
+
+
+    def update_group_from_id(
+            self,
+            group_id: int,
+            new_name: str
+    ) -> UserGroup:
+        return self.infrastructure_db.update_group_from_id(
+            group_id, new_name)
+
+    def update_role_from_id(
+            self,
+            role_id: int,
+            new_name: str
+    ) -> Role:
+        return self.infrastructure_db.update_role_from_id(
+            role_id, new_name)

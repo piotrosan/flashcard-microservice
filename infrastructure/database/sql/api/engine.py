@@ -14,6 +14,9 @@ from infrastructure.database.sql.models.base import Base
 from infrastructure.database.sql.api.exception.generic_exception import RawStatementHttpException
 
 logger = logging.getLogger("root")
+from typing import TypeVar
+
+T = TypeVar('T')
 
 class DBEngineAbstract(abc.ABC):
 
@@ -38,8 +41,8 @@ class DBEngineAbstract(abc.ABC):
     def update_object(
             self,
             obj: type[Base],
-            mappings: Dict[str, Any]
-    ) -> type[Base]:
+            mappings: List[Dict[str, int | str]]
+    ) -> type[T]:
         raise NotImplemented()
 
     def _update_statement(self, upd: Update[Any]):
@@ -77,8 +80,8 @@ class DBEngine(DBEngineAbstract):
     def update_object(
             self,
             obj: type[Base],
-            mappings: Dict[str, Any]
-    ) -> type[Base]:
+            mappings: Iterable[Dict[str, Any]]
+    ) -> type[T]:
         with session as s:
             s.bulk_update_mappings(obj, mappings)
             s.commit()

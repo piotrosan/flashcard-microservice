@@ -79,3 +79,39 @@ async def add_user_to_group(
     amount: int = ats.add_user_to_group(permission_data)
     return amount
 
+
+@router.put(
+    "/update_group/{group_id}",
+    response_model=dict
+)
+async def update_group(
+    group_name: str,
+    group_id: Annotated[
+        int, Path(...)
+    ],
+    request: Request
+):
+    up_db = UserPermissionDBAPI()
+    ats = AuthService(up_db)
+    new_group: UserGroup = ats.update_group_from_id(group_id, group_name)
+    return {'id': new_group.id, 'name': new_group.name}
+
+
+@router.put(
+    "/update_role/{role_id}",
+    response_model=dict
+)
+async def update_role(
+    role_name: str,
+    role_id: Annotated[
+        int, Path(...)
+    ],
+    request: Request
+):
+    up_db = UserPermissionDBAPI()
+    ats = AuthService(up_db)
+    new_role: Role = ats.update_role_from_id(role_id, role_name)
+    return {'id': new_role.id, 'name': new_role.name}
+
+
+

@@ -256,9 +256,44 @@ class GetUserPermissionDBAPIMixin(DBEngineAbstract):
             )
 
 
-
 class UpdateUserPermissionDBAPIMixin(DBEngineAbstract):
-    pass
+    def update_group_from_id(
+            self,
+            group_id: int,
+            new_name: str
+    ) -> UserGroup:
+        try:
+            return self.update_object(
+                UserGroup,
+                [{'id': group_id, 'name': new_name}]
+            )
+        except exc.SQLAlchemyError as e:
+            logger.critical(
+                "Problem wile update user group"
+                f" - {e}")
+            raise AuthHttpException(
+                detail="Can not update user group",
+                status_code=400
+            )
+
+    def update_role_from_id(
+            self,
+            role_id: int,
+            new_name: str
+    ) -> Role:
+        try:
+            return self.update_object(
+                Role,
+                [{'id': role_id, 'name': new_name}]
+            )
+        except exc.SQLAlchemyError as e:
+            logger.critical(
+                "Problem wile update"
+                f" role - {e}")
+            raise AuthHttpException(
+                detail="Can not update role",
+                status_code=400
+            )
 
 
 class UserPermissionDBAPI(
