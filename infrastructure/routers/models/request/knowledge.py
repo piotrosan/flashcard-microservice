@@ -6,3 +6,8 @@ class CreateKnowledgeRequest(BaseModel):
     planned_start: datetime = None
     user_email: str
 
+
+class UpdateKnowledgeRequest(BaseModel):
+    id: int
+    planned_start: datetime = None
+    user_email: str = None

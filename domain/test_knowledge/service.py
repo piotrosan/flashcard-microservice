@@ -4,7 +4,7 @@ from infrastructure.database.sql.api.test_knowledge_database_api import \
     TestKnowledgeDBAPI
 from infrastructure.database.sql.models import TestKnowledge
 from infrastructure.routers.models.request.knowledge import \
-    CreateKnowledgeRequest
+    CreateKnowledgeRequest, UpdateKnowledgeRequest
 from infrastructure.supporter.generic import random_from
 
 
@@ -74,7 +74,7 @@ class TestKnowledgeService:
             page_id
         )
 
-    def update_test_from_id(self, id_knowledge: int, data: dict):
-        return self.infrastructure_db.query_test_knowledge_from_id(
-            id_knowledge
+    def update_test(self, test_data: UpdateKnowledgeRequest):
+        return self.infrastructure_db.update_test(
+            test_data.model_dump(mode='python')
         )

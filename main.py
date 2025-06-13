@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 import uvicorn
 from fastapi import FastAPI
 from starlette.middleware import Middleware
@@ -6,6 +8,7 @@ from starlette.middleware.authentication import AuthenticationMiddleware
 from infrastructure.security.middleware.auth import TokenAuthBackend
 from infrastructure.routers import flash_card, user_permission
 from settings import DOMAIN, PORT
+from infrastructure.webhooks.register import AppRegister
 
 # middlewares = [
 #     Middleware(AuthenticationMiddleware, backend=TokenAuthBackend()),
@@ -13,7 +16,25 @@ from settings import DOMAIN, PORT
 #
 # app = FastAPI(middleware=middlewares)
 
-app = FastAPI()
+def register_app():
+    ar = AppRegister()
+    ar.send_register_request()
+
+def unregister_app():
+    ar = AppRegister()
+    ar.send_unregister_request()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Register app in cache
+    register_app()
+    yield
+    # Unregistered while restart
+    unregister_app()
+
+
+
+app = FastAPI(lifespan=lifespan)
 # include
 app.include_router(flash_card.router)
 app.include_router(user_permission.router)

@@ -75,10 +75,16 @@ class UserGroup(Base):
 class Role(Base):
 
     __tablename__ = "user_group_roles"
-
+    __table_args__ = (
+        UniqueConstraint(
+            'user_group_id',
+            'name',
+            name='unique_name_role_user_group'
+        ),
+    )
     id = Column(Integer, primary_key=True, autoincrement="auto")
     user_group_id = Column(Integer, ForeignKey("user_groups.id"))
-    name = Column(String(100), unique=True)
+    name = Column(String(100))
     create_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, onupdate=func.now())
 

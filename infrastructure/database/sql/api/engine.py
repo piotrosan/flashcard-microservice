@@ -42,7 +42,7 @@ class DBEngineAbstract(abc.ABC):
             self,
             obj: type[Base],
             mappings: List[Dict[str, int | str]]
-    ) -> type[T]:
+    ) -> bool:
         raise NotImplemented()
 
     def _update_statement(self, upd: Update[Any]):
@@ -79,13 +79,13 @@ class DBEngine(DBEngineAbstract):
 
     def update_object(
             self,
-            obj: type[Base],
+            clss: type[Base],
             mappings: Iterable[Dict[str, Any]]
-    ) -> type[T]:
+    ) -> bool:
         with session as s:
-            s.bulk_update_mappings(obj, mappings)
+            s.bulk_update_mappings(clss, mappings)
             s.commit()
-        return obj
+        return True
 
     def _update_statement(self, upd: Update[Any]):
         with session as s:

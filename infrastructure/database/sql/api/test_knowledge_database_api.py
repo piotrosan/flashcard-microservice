@@ -1,5 +1,5 @@
 import logging
-from typing import Iterable, List, cast, Generator, Iterator
+from typing import Iterable, List, cast, Generator, Iterator, Dict
 
 from sqlalchemy.engine.result import Result
 from typing_extensions import Any
@@ -264,26 +264,19 @@ class GetTestKnowledgeDBAPIMixin(DBEngineAbstract):
 
 class UpdateKnowledgeDBAPIMixin(DBEngineAbstract):
 
-    def query_tests_for_user_paginate(
-            self,
-            hash_identifier: str,
-            page: int = None
-    ) -> Iterator[Any]:
+    def update_test(
+        self,
+        test_data: Dict[str, int | str],
+    ) -> bool:
         try:
-            return self.query_statement(
-                self._select_tests_knowledge_for_user_sql(
-                    hash_identifier
-                ),
-                page=page
-            )
+            return self.update_object(TestKnowledge, [test_data])
         except exc.SQLAlchemyError as e:
             logger.critical(
-                f"Problem wile select tests knowledge "
-                f"for user {hash_identifier} -> {e}"
+                f"Problem wile update Test Knowledge "
+                f" -> {e}"
             )
             raise TestKnowledgeHttpException(
-                detail=f"Can not select tests knowledge "
-                       f"for user {hash_identifier}",
+                detail=f"Can not update tests knowledge ",
                 status_code=400
             )
 

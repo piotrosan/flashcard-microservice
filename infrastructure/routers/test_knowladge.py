@@ -4,7 +4,9 @@ from fastapi import APIRouter, HTTPException, Path, Request, Body
 from infrastructure.database.sql.api.test_knowledge_database_api import \
     TestKnowledgeDBAPI
 from infrastructure.database.sql.models.test_knowledge import TestKnowledge
-from infrastructure.routers.models.request.knowledge import CreateKnowledgeRequest
+from infrastructure.routers.models.request.generic import GenericRequest
+from infrastructure.routers.models.request.knowledge import \
+    CreateKnowledgeRequest, UpdateKnowledgeRequest
 from domain.test_knowledge.service import TestKnowledgeService
 from infrastructure.routers.models.response.knowledge import KnowledgeResponse
 from infrastructure.security.permission.account_admin import check_account_admin
@@ -53,7 +55,7 @@ async def get_test(
         id_knowledge: Annotated[int, Path()],
         request: Request
 ) -> KnowledgeResponse:
-    assert check_app_admin(request.user)
+    assert check_app_admin(request.user.hash_identifier)
     dbapi = TestKnowledgeDBAPI()
     service = TestKnowledgeService(dbapi)
     service.get_test(id_knowledge)
@@ -65,19 +67,22 @@ async def create_test(
         create_date: Annotated[CreateKnowledgeRequest, Body()],
         request: Request
 ) -> KnowledgeResponse:
-    assert check_account_admin(request.user)
+    assert check_account_admin(request.user.hash_identifier)
     dbapi = TestKnowledgeDBAPI()
     service = TestKnowledgeService(dbapi)
     saved_object: TestKnowledge = service.insert(create_date).pop()
     return KnowledgeResponse(**saved_object.__dict__)
 
 @router.put(
-    "/{test_id}",
-    response_model=KnowledgeResponse
+    "/",
+    response_model=GenericRequest
 )
-async def update_test(item_id: str):
+async def update_test(
+        test_data: Annotated[
+            UpdateKnowledgeRequest, Body()
+        ]
+):
     dbapi = TestKnowledgeDBAPI()
     service = TestKnowledgeService(dbapi)
-    saved_object: TestKnowledge = service.insert
-
-    return {"item_id": item_id, "name": "The great Plumbus"}
+    service.update_test(test_data)
+    return GenericRequest(message='object have been updated')
