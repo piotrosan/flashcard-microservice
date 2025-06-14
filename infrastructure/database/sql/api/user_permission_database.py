@@ -1,5 +1,5 @@
 import logging
-from typing import Iterable, List, cast, Generator, Iterator
+from typing import Iterable, List, cast, Generator, Iterator, Tuple
 
 from sqlalchemy.engine.result import Result
 from sqlalchemy.orm import contains_eager, joinedload
@@ -93,6 +93,25 @@ class CreateUserPermissionsDBAPIMixin(DBEngineAbstract):
                 status_code=400
             )
 
+
+    def insert_user(
+            self,
+            hash_identifier: str,
+    ) -> User:
+        try:
+            user: User = User(hash_identifier=hash_identifier)
+            self.insert_objects([user])
+            return user
+        except exc.SQLAlchemyError as e:
+            logger.critical(
+                f"Problem wile insert user -> {e}"
+            )
+            raise TestKnowledgeHttpException(
+                detail="Can not insert user group with role",
+                status_code=400
+            )
+
+
     def add_user_to_group(
             self,
             groups_and_roles: List[UserGroup],
@@ -100,13 +119,12 @@ class CreateUserPermissionsDBAPIMixin(DBEngineAbstract):
     ) -> int:
         try:
             associations = [
-                AssociationUserGroupUser(user=user, user_group=g)
+                AssociationUserGroupUser(user=user, user_group=g[0])
                 for g in groups_and_roles
             ]
 
             self.insert_objects(associations)
             return len(associations)
-
         except exc.SQLAlchemyError as e:
             g: UserGroupAndRole
             logger.critical(
@@ -119,7 +137,14 @@ class CreateUserPermissionsDBAPIMixin(DBEngineAbstract):
                 detail="Can not add user to group",
                 status_code=400
             )
-
+        except IndexError as e:
+            logger.critical(
+                f"Problem wile add user to group, groups is empty -> {e}"
+            )
+            raise TestKnowledgeHttpException(
+                detail="Can not add user to group",
+                status_code=400
+            )
 
 class GetUserPermissionDBAPIMixin(DBEngineAbstract):
     def _select_all_test_knowledge_sql(
@@ -194,25 +219,21 @@ class GetUserPermissionDBAPIMixin(DBEngineAbstract):
             self,
             groups: List[str]
     ):
-        return (
+        sql = (
             select(UserGroup)
-            .where(
-                cast(
-                    "ColumnElement[bool]",
-                    UserGroup.name.in_(groups)
-                )
-            )
+            .where(UserGroup.name.in_(groups))
         )
+        return sql
 
 
     def query_groups_for_names(
             self,
-            groups: List[str],
+            groups: list[str],
             page=None
     ) -> List[UserGroup]:
         try:
             return list(self.query_statement(
-                self._select_user_groups_for_names_sql(groups),
+                self._select_user_groups_for_names_sql(group),
                 page=page
             ))
         except exc.SQLAlchemyError as e:
@@ -241,15 +262,23 @@ class GetUserPermissionDBAPIMixin(DBEngineAbstract):
 
     def query_user_from_hash(self, hash_identifier: str, page=None) -> Any:
         try:
-            row: Result = next(self.query_statement(
+            users: Tuple[User] = next(self.query_statement(
                 self._select_user_for_hash_sql(hash_identifier),
                 page=page
             ))
-            return row.scalar()
+            return users[0]
         except exc.SQLAlchemyError as e:
             logger.critical(
                 "Problem wile select query"
                 f" user - {e}")
+            raise AuthHttpException(
+                detail="Can not select user",
+                status_code=400
+            )
+        except IndexError as e:
+            logger.critical(
+                f"Empty selected user, hash ->{hash_identifier}, exec -> {e}"
+            )
             raise AuthHttpException(
                 detail="Can not select user",
                 status_code=400
@@ -261,7 +290,7 @@ class UpdateUserPermissionDBAPIMixin(DBEngineAbstract):
             self,
             group_id: int,
             new_name: str
-    ) -> UserGroup:
+    ) -> bool:
         try:
             return self.update_object(
                 UserGroup,
@@ -280,7 +309,7 @@ class UpdateUserPermissionDBAPIMixin(DBEngineAbstract):
             self,
             role_id: int,
             new_name: str
-    ) -> Role:
+    ) -> bool:
         try:
             return self.update_object(
                 Role,

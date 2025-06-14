@@ -16,4 +16,7 @@ class FullPermissionDataRequest(BaseModel):
 
 class UserAndGroup(BaseModel):
     hash_identifier: str
-    name: List[str]
+    name: str
+
+class Group(BaseModel):
+    name: str

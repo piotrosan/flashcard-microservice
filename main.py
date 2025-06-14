@@ -10,11 +10,10 @@ from infrastructure.routers import flash_card, user_permission
 from settings import DOMAIN, PORT
 from infrastructure.webhooks.register import AppRegister
 
-# middlewares = [
-#     Middleware(AuthenticationMiddleware, backend=TokenAuthBackend()),
-# ]
-#
-# app = FastAPI(middleware=middlewares)
+middlewares = [
+    Middleware(AuthenticationMiddleware, backend=TokenAuthBackend()),
+]
+
 
 def register_app():
     ar = AppRegister()
@@ -33,8 +32,10 @@ async def lifespan(app: FastAPI):
     unregister_app()
 
 
-
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(
+    lifespan=lifespan,
+    middleware=middlewares
+)
 # include
 app.include_router(flash_card.router)
 app.include_router(user_permission.router)

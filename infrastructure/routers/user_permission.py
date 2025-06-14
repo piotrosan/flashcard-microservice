@@ -6,7 +6,8 @@ from infrastructure.database.sql.api.user_permission_database import \
     UserPermissionDBAPI
 from infrastructure.database.sql.models.auth import User, UserGroup
 from infrastructure.routers.models.request.permission import \
-    FullPermissionDataRequest, UserGroupAndRole, Role, UserAndGroup
+    FullPermissionDataRequest, UserGroupAndRole, Role, UserAndGroup, Group
+from infrastructure.routers.models.response.generic import GenericResponse
 from infrastructure.routers.models.response.permission import \
     UserPermissionResponse
 
@@ -64,6 +65,21 @@ async def save_group_and_role(
         ) for g in groups]
 
 
+@router.post(
+    "/user",
+    response_model=GenericResponse
+)
+async def save_user(
+    hash_identifier: Annotated[str, Body(embed=True)],
+    request: Request
+):
+    up_db = UserPermissionDBAPI()
+    ats = AuthService(up_db)
+    ats.save_user(hash_identifier)
+
+    return GenericResponse(message="User have been saved", timestamp='')
+
+
 @router.put(
     "/add_user_to_role",
     response_model=int
@@ -81,8 +97,24 @@ async def add_user_to_group(
 
 
 @router.put(
+    "/add_me_to_group",
+    response_model=int
+)
+async def add_me_to_group(
+    permission_data: Annotated[
+        Group, Body(...)
+    ],
+    request: Request
+):
+    up_db = UserPermissionDBAPI()
+    ats = AuthService(up_db)
+    amount: int = ats.add_me_to_group(permission_data, request.user)
+    return amount
+
+
+@router.put(
     "/update_group/{group_id}",
-    response_model=dict
+    response_model=GenericResponse
 )
 async def update_group(
     group_name: str,
@@ -93,13 +125,13 @@ async def update_group(
 ):
     up_db = UserPermissionDBAPI()
     ats = AuthService(up_db)
-    new_group: UserGroup = ats.update_group_from_id(group_id, group_name)
-    return {'id': new_group.id, 'name': new_group.name}
+    updated_group: bool = ats.update_group_from_id(group_id, group_name)
+    return GenericResponse(message='Group updated', timestamp='')
 
 
 @router.put(
     "/update_role/{role_id}",
-    response_model=dict
+    response_model=GenericResponse
 )
 async def update_role(
     role_name: str,
@@ -110,8 +142,8 @@ async def update_role(
 ):
     up_db = UserPermissionDBAPI()
     ats = AuthService(up_db)
-    new_role: Role = ats.update_role_from_id(role_id, role_name)
-    return {'id': new_role.id, 'name': new_role.name}
+    updated_role: bool = ats.update_role_from_id(role_id, role_name)
+    return GenericResponse(message='Role updated', timestamp='')
 
 
 
