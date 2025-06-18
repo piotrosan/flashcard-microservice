@@ -146,4 +146,18 @@ async def update_role(
     return GenericResponse(message='Role updated', timestamp='')
 
 
+@router.get(
+    "/user_group",
+    response_model=List[UserGroupAndRole]
+)
+async def get_group_role(
+    request: Request
+):
+    return [
+        UserGroupAndRole(
+            name=g.name,
+            roles=[Role(name=r.name) for r in g.roles]
+        ) for g in request.user.user_groups]
+
+
 

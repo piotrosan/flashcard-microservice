@@ -11,7 +11,10 @@ from settings import DOMAIN, PORT
 from infrastructure.webhooks.register import AppRegister
 
 middlewares = [
-    Middleware(AuthenticationMiddleware, backend=TokenAuthBackend()),
+    Middleware(
+        AuthenticationMiddleware,
+        backend=TokenAuthBackend()
+    ),
 ]
 
 
@@ -43,6 +46,9 @@ app.include_router(user_permission.router)
 
 @app.get("/")
 async def root():
+    # from passlib.context import CryptContext
+    # pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    # pwd_context.verify()
     return {"message": "Ping"}
 
 
