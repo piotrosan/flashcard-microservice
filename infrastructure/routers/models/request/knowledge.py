@@ -4,10 +4,10 @@ from datetime import date, datetime, time, timedelta
 
 class CreateKnowledgeRequest(BaseModel):
     planned_start: datetime = None
-    user_email: str
+    user_identifier: str
 
 
 class UpdateKnowledgeRequest(BaseModel):
     id: int
     planned_start: datetime = None
-    user_email: str = None
+    user_identifier: str = None

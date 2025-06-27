@@ -3,6 +3,7 @@ from typing import List, Any
 from infrastructure.database.sql.api.test_knowledge_database_api import \
     TestKnowledgeDBAPI
 from infrastructure.database.sql.models import TestKnowledge
+from infrastructure.database.sql.models.auth import User
 from infrastructure.routers.models.request.knowledge import \
     CreateKnowledgeRequest, UpdateKnowledgeRequest
 from infrastructure.supporter.generic import random_from
@@ -25,34 +26,34 @@ class TestKnowledgeService:
 
     def get_flash_cards_for_test_and_user(
             self,
-            hash_identifier: str,
+            user: User,
             id_knowledge: int
     ):
         return self.infrastructure_db.query_test_knowledge_with_flash_cards_for_user(
             id_knowledge,
-            hash_identifier
+            user.hash_identifier
         )
 
     def get_random_test_for_user(
             self,
-            hash_identifier: str
+            user: User
     ):
         count = self.infrastructure_db.get_count_test_knowledge()
         id_knowledge = random_from(count)
         return self.infrastructure_db.query_test_knowledge_with_flash_cards_for_user(
             id_knowledge,
-            hash_identifier
+            user.hash_identifier
         )
 
 
     def get_test_for_user(
             self,
             id_knowledge: int,
-            hash_identifier: str
+            user: User
     ):
         return self.infrastructure_db.query_test_knowledge_with_flash_cards_for_user(
             id_knowledge,
-            hash_identifier
+            user.hash_identifier
         )
 
 

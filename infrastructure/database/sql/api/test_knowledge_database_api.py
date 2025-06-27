@@ -2,6 +2,7 @@ import logging
 from typing import Iterable, List, cast, Generator, Iterator, Dict
 
 from sqlalchemy.engine.result import Result
+from sqlalchemy.orm import joinedload
 from typing_extensions import Any
 
 from sqlalchemy import select, text, and_
@@ -123,17 +124,22 @@ class GetTestKnowledgeDBAPIMixin(DBEngineAbstract):
             hash_identifier: str
     ):
         try:
-            return select(FlashCard, TestKnowledge).where(
-                and_(
-                    cast(
-                        "ColumnElement[bool]",
-                        TestKnowledge.id == id_knowledge
-                    ),
-                    cast(
-                        "ColumnElement[bool]",
-                        TestKnowledge.hash_identifier == hash_identifier
-                    ),
+            return (
+                select(TestKnowledge)
+                .join(TestKnowledge.flash_cards)
+                .where(
+                    and_(
+                        cast(
+                            "ColumnElement[bool]",
+                            TestKnowledge.id == id_knowledge
+                        ),
+                        cast(
+                            "ColumnElement[bool]",
+                            TestKnowledge.hash_identifier == hash_identifier
+                        ),
+                    )
                 )
+                .options(joinedload(TestKnowledge.flash_cards))
             )
         except exc.SQLAlchemyError as e:
             logger.critical(

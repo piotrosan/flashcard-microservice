@@ -11,10 +11,7 @@ class TokenAuthBackend(AuthenticationBackend):
         try:
             token = request.headers["Authorization"]
         except KeyError as exc:
-            raise TokenAuthException(
-                detail='Empty headers, fill token in Authorization key',
-                status_code=400
-            )
+            return None, None
 
         tr = TokenRequester()
         validate, payload = tr.request_for_validate(token)

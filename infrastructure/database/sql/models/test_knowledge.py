@@ -58,3 +58,9 @@ class TestKnowledge(Base):
     asso_test_knowledge: Mapped[
         List["AssociationKnowledgeFlashCard"]
     ] = relationship(back_populates="test_knowledge")
+
+    flash_cards: Mapped[List["FlashCard"]] = relationship(
+        lazy='joined',
+        secondary="association_knowledge_flash_card",
+        back_populates="test_knowledges"
+    )

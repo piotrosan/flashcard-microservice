@@ -11,7 +11,8 @@ from infrastructure.database.sql.models.test_knowledge import TestKnowledge, \
     AssociationKnowledgeFlashCard
 from infrastructure.database.sql.models.flash_card import FlashCard
 from infrastructure.database.sql.api.exception.flash_card_exception import FlashCardHttpException
-
+from infrastructure.routers.models.request.flash_card import \
+    CreateFlashCardRequest
 
 logger = logging.getLogger("root")
 
@@ -20,23 +21,21 @@ class CreateFlashCardDBAPI(DBEngineAbstract):
 
     def insert(
             self,
-            flash_card_data: dict,
-            test_knoledge_data: dict
-    ) -> Iterable[TestKnowledge]:
+            flash_card_datas: List[CreateFlashCardRequest],
+    ) -> Iterable[FlashCard]:
         """
         :param external_login_data:
         :param user_data:
         :return: list of id of created models
         """
         try:
-            flash_card = FlashCard(**flash_card_data)
-            test_knowledge = TestKnowledge(**test_knoledge_data)
-            test_knowledge.flash_cards = [
-                AssociationKnowledgeFlashCard(flash_card=flash_card)
-            ]
-            return self.insert_objects([test_knowledge])
+
+            return self.insert_objects([
+                FlashCard(**fcd.model_dump(mode='python'))
+                for fcd in flash_card_datas
+            ])
         except exc.SQLAlchemyError as e:
-            logger.critical(f"Problem wile insert user {flash_card} -> {e}")
+            logger.critical(f"Problem wile insert flash card -> {e}")
             raise FlashCardHttpException(
                 detail="Can not insert flash card",
                 status_code=400

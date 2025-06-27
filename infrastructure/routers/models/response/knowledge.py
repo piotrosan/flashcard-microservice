@@ -12,4 +12,4 @@ class KnowledgeResponse(BaseModel):
     user_identifier: str = None
     create_at: datetime = None
     updated_at: datetime = None
-    flash_cards: List[FlashCard] = None
+    flash_cards: List[dict] = None

@@ -6,7 +6,7 @@ from starlette.middleware import Middleware
 from starlette.middleware.authentication import AuthenticationMiddleware
 
 from infrastructure.security.middleware.auth import TokenAuthBackend
-from infrastructure.routers import flash_card, user_permission
+from infrastructure.routers import flash_card, user_permission, test_knowladge
 from settings import DOMAIN, PORT
 from infrastructure.webhooks.register import AppRegister
 
@@ -42,6 +42,7 @@ app = FastAPI(
 # include
 app.include_router(flash_card.router)
 app.include_router(user_permission.router)
+app.include_router(test_knowladge.router)
 
 
 @app.get("/")

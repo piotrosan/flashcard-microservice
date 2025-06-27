@@ -14,7 +14,9 @@ class AppRegister:
             logger.critical('Set APP_ID to data')
 
         self._data = {
-            'app': settings.APP_ID
+            'app': settings.APP_ID,
+            'name': settings.NAME,
+            'na_me': settings.NA_ME
         }
 
     def send_register_request(self):

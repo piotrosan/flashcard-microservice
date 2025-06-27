@@ -1,9 +1,12 @@
 import os
 
-APP_ID = '216d9d8c-3a23-11f0-8bd8-0800270ff509'
-PAGINATION_PER_PAGE = 50
 
 root_path = os.path.abspath(os.path.dirname(__file__))
+
+# APP CONFIG
+APP_ID = '216d9d8c-3a23-11f0-8bd8-0800270ff509'
+NAME = 'Flash Card'
+NA_ME = 'flash-dard'
 
 SSL_KEYFILE = None
 SSL_CERTFILE = None
@@ -13,6 +16,7 @@ PORT = 8002
 BASE_URL = f"{'https' if SSL_CERTFILE else 'http'}://{DOMAIN}:{PORT}"
 
 # database
+PAGINATION_PER_PAGE = 50
 
 POSTGRES_HOST_WITH_PORT = "localhost:5432"
 POSTGRES_USER = "postgres"
