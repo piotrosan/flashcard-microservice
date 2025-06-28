@@ -10,7 +10,9 @@ from sqlalchemy import exc
 
 from infrastructure.database.sql.api.analytics import AnalyticsSQLMixin
 from infrastructure.database.sql.api.engine import DBEngine, DBEngineAbstract
-from infrastructure.database.sql.models.test_knowledge import TestKnowledge
+from infrastructure.database.sql.models import Language
+from infrastructure.database.sql.models.test_knowledge import TestKnowledge, \
+    AssociationKnowledgeFlashCard
 from infrastructure.database.sql.models.flash_card import FlashCard
 from infrastructure.database.sql.api.exception.test_knowledge_exception import TestKnowledgeHttpException
 
@@ -83,10 +85,6 @@ class GetTestKnowledgeDBAPIMixin(DBEngineAbstract):
                 and_(
                     cast(
                         "ColumnElement[bool]",
-                        TestKnowledge.id == id_test_knowledge
-                    ),
-                    cast(
-                        "ColumnElement[bool]",
                         TestKnowledge.user_identifier == user_identifier
                     ),
                 )
@@ -99,16 +97,46 @@ class GetTestKnowledgeDBAPIMixin(DBEngineAbstract):
                 status_code=400
             )
 
-    def _select_tests_knowledge_for_user_sql(
+    def _slct_tst_know_flsh_crd_from_user_sql(
             self,
+            id_test_knowledge: int,
             user_identifier: str
     ):
         try:
-            return select(TestKnowledge).where(
-                cast(
-                    "ColumnElement[bool]",
-                    TestKnowledge.user_identifier == user_identifier
-                ),
+            return (
+                select(TestKnowledge)
+                .join_from(
+                    TestKnowledge,
+                    FlashCard,
+                    TestKnowledge.flash_cards.any(
+                        and_(
+                            TestKnowledge.id == AssociationKnowledgeFlashCard.test_knowledge_id,
+                            FlashCard.id == AssociationKnowledgeFlashCard.flash_card_id,
+                            TestKnowledge.user_identifier == user_identifier
+                        )
+                    )
+                )
+                .join_from(
+                    FlashCard,
+                    Language,
+                    FlashCard.language.any(
+                        and_(FlashCard.language_id == Language.id)
+                    )
+                )
+                .where(
+                    cast(
+                        "ColumnElement[bool]",
+                        TestKnowledge.user_identifier == user_identifier
+                    ),
+                    cast(
+                        "ColumnElement[bool]",
+                        TestKnowledge.id == id_test_knowledge
+                    ),
+                )
+                .options(
+                    joinedload(TestKnowledge.flash_cards)
+                    .joinedload(FlashCard.language)
+                )
             )
         except exc.SQLAlchemyError as e:
             logger.critical(
@@ -118,34 +146,27 @@ class GetTestKnowledgeDBAPIMixin(DBEngineAbstract):
                 status_code=400
             )
 
-    def _select_test_knowledge_with_all_flash_cards_for_user_sql(
+    def _slct_tst_know_with_for_user_sql(
             self,
-            id_knowledge: int,
             hash_identifier: str
     ):
         try:
             return (
                 select(TestKnowledge)
-                .join(TestKnowledge.flash_cards)
                 .where(
                     and_(
-                        cast(
-                            "ColumnElement[bool]",
-                            TestKnowledge.id == id_knowledge
-                        ),
                         cast(
                             "ColumnElement[bool]",
                             TestKnowledge.hash_identifier == hash_identifier
                         ),
                     )
                 )
-                .options(joinedload(TestKnowledge.flash_cards))
             )
         except exc.SQLAlchemyError as e:
             logger.critical(
-                f"Problem wile select flash card from test knowledge id {e}")
+                f"Problem wile select test knowledge for user {hash_identifier},  {e}")
             raise TestKnowledgeHttpException(
-                detail="Can not create select test knowledge",
+                detail="Can not select select test knowledge",
                 status_code=400
             )
 
@@ -183,26 +204,18 @@ class GetTestKnowledgeDBAPIMixin(DBEngineAbstract):
                 status_code=400
             )
 
-    def query_test_knowledge_with_flash_cards_for_user(
+    def qet_tsts_know_for_user(
             self,
-            id_knowledge: int,
+            page_id: int,
             hash_identifier: str,
     ) -> Iterator[Any]:
-        try:
-            return self.query_statement(
-                self._select_test_knowledge_with_all_flash_cards_for_user_sql(
-                    id_knowledge,
-                    hash_identifier
-                )
-            )
-        except exc.SQLAlchemyError as e:
-            logger.critical(
-                f"Problem wile select test knowledge {id_knowledge} -> {e}"
-            )
-            raise TestKnowledgeHttpException(
-                detail=f"Can not select test knowledge {id_knowledge}",
-                status_code=400
-            )
+        return self.query_statement(
+            self._slct_tst_know_with_for_user_sql(
+                hash_identifier
+            ),
+            TestKnowledge,
+            page=page_id
+        )
 
     def query_test_knowledge_from_id(
             self,
@@ -244,17 +257,17 @@ class GetTestKnowledgeDBAPIMixin(DBEngineAbstract):
             )
 
 
-    def query_tests_for_user_paginate(
+    def get_tsts_with_cards_for_user(
             self,
             hash_identifier: str,
-            page: int = None
+            id_test_knowledge: int,
     ) -> Iterator[Any]:
         try:
             return self.query_statement(
-                self._select_tests_knowledge_for_user_sql(
+                self._slct_tst_know_flsh_crd_from_user_sql(
+                    id_test_knowledge,
                     hash_identifier
                 ),
-                page=page
             )
         except exc.SQLAlchemyError as e:
             logger.critical(

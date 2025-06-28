@@ -21,19 +21,47 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-@router.get("/{flash_card_id}")
+@router.get("/one/{flash_card_id}", response_model=List[FlashCardResponse])
 async def get_fash_card(
         flash_card_id: Annotated[int, Path()],
         request: Request
 ):
-    pass
+    fapi = FlashCardDBAPI()
+    service = FashCardService(fapi)
+    fcs: Iterable[FlashCard] = service.get_flash_card(flash_card_id)
 
-@router.get("/{page_id}")
-async def list_fash_cards(
+    return [
+        FlashCardResponse(
+            id=fc.id,
+            word=fc.word,
+            language_id=fc.language_id,
+            translate=fc.translate,
+            create_at=fc.create_at,
+            updated_at=fc.updated_at
+        )
+            for fc in fcs
+    ]
+
+@router.get("/page/{page_id}", response_model=List[FlashCardResponse])
+async def get_fash_cards(
         request: Request,
         page_id: Annotated[int, Path()],
 ):
-    pass
+    fapi = FlashCardDBAPI()
+    service = FashCardService(fapi)
+    fcs: Iterable[Tuple[FlashCard]] = service.get_flash_cards(page_id)
+
+    return [
+        FlashCardResponse(
+            id=fc[0].id,
+            word=fc[0].word,
+            language_id=fc[0].language_id,
+            translate=fc[0].translate,
+            create_at=fc[0].create_at,
+            updated_at=fc[0].updated_at
+        )
+            for fc in fcs
+    ]
 
 @router.put(
     "/{flash_card_id}",

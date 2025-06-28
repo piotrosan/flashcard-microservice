@@ -10,6 +10,7 @@ class Pagination:
         self.model = model
 
     def get_page(self, page: int) -> Select:
+        page = page - 1
         start = self.offset * page
         end  = start + self.offset
         return self.select.where(

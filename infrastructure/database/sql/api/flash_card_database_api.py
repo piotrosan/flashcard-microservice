@@ -180,10 +180,13 @@ class GetFlashCardDBAPI(DBEngineAbstract):
 
     def query_flash_cards_generator(
             self,
+            page_id: int
     ) -> Iterator[Any]:
         try:
             return self.query_statement(
-                    self._select_all_flash_card_sql()
+                    self._select_all_flash_card_sql(),
+                    FlashCard,
+                    page_id
             )
         except exc.SQLAlchemyError as e:
             logger.critical(

@@ -1,13 +1,15 @@
-from typing import Annotated
+from typing import Annotated, Iterator, Tuple, List
 from fastapi import APIRouter, HTTPException, Path, Request, Body, WebSocket
 
 from infrastructure.database.sql.api.test_knowledge_database_api import \
     TestKnowledgeDBAPI
+from infrastructure.database.sql.models import FlashCard
 from infrastructure.database.sql.models.test_knowledge import TestKnowledge
 from infrastructure.routers.models.request.generic import GenericRequest
 from infrastructure.routers.models.request.knowledge import \
     CreateKnowledgeRequest, UpdateKnowledgeRequest
 from domain.test_knowledge.service import TestKnowledgeService
+from infrastructure.routers.models.response.flash_card import FlashCardResponse
 from infrastructure.routers.models.response.knowledge import KnowledgeResponse
 from infrastructure.security.permission.account_admin import check_account_admin
 from infrastructure.security.permission.app_admin import check_admin
@@ -22,7 +24,7 @@ router = APIRouter(
 )
 
 
-@router.get("/{test_id}", response_model=KnowledgeResponse)
+@router.get("/tst/{test_id}", response_model=KnowledgeResponse)
 async def get_test_for_user(
         id_knowledge: Annotated[int, Path()],
         request: Request
@@ -36,18 +38,42 @@ async def get_test_for_user(
     return KnowledgeResponse()
 
 
-@router.get("/{page_id}", response_model=KnowledgeResponse)
-async def list_test_for_user(
-        page_id: Annotated[int, Path()],
+@router.get(
+    "/tst/fsh_crd/lang/{id_test_knowledge}",
+    response_model=List[KnowledgeResponse]
+)
+async def test_with_all_data_for_user_from_tst(
+        id_test_knowledge: Annotated[int, Path()],
         request: Request
-) -> KnowledgeResponse:
+) -> List[KnowledgeResponse]:
     dbapi = TestKnowledgeDBAPI()
     service = TestKnowledgeService(dbapi)
-    result = service.list_test_for_user(
-        request.user.username,
-        page_id=page_id
+    tsts_know: Iterator[
+        Tuple[TestKnowledge]
+    ] = service.get_tsts_know_with_cards_for_user(
+        request.user.hash_identifier,
+        id_test_knowledge=id_test_knowledge
     )
-    return KnowledgeResponse()
+    fc: FlashCard
+    return [
+        KnowledgeResponse(
+            id=tst[0].id,
+            planned_start=tst[0].planned_start,
+            create_at=tst[0].create_at,
+            updated_at=tst[0].updated_at,
+            flash_cards=[FlashCardResponse(
+                id=fc.id,
+                word=fc.word,
+                translate=fc.translate,
+                language_id=fc.language.full_name,
+                create_at=fc.create_at,
+                updated_at=fc.updated_at
+            )
+                for fc in tst[0].flash_cards
+            ]
+        )
+        for tst in tsts_know
+    ]
 
 
 @router.get("/{test_id}", response_model=KnowledgeResponse)

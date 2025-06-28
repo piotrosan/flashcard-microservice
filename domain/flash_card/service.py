@@ -1,10 +1,11 @@
-from typing import List, Iterable, Tuple
+from typing import List, Iterable, Tuple, Any, Iterator
 
 from infrastructure.database.sql.api.flash_card_database_api import FlashCardDBAPI
 from infrastructure.database.sql.models import FlashCard
 from infrastructure.database.sql.models.flash_card import Language
 from infrastructure.routers.models.request.flash_card import \
     CreateFlashCardRequest, CreateLanguageRequest
+from infrastructure.supporter.generic import random_from
 
 
 class FashCardService:
@@ -12,14 +13,11 @@ class FashCardService:
     def __init__(self, infrastructure_db: FlashCardDBAPI):
         self.infrastructure_db = infrastructure_db
 
-    def list_flash_cards(self):
-        return self.infrastructure_db.query_flash_cards_generator()
+    def get_flash_cards(self, page_id: int) -> Iterator[Any]:
+        return self.infrastructure_db.query_flash_cards_generator(page_id)
 
-    def get_random_flash_card(self):
-        pass
-
-    def get_flash_card(self, flash_card: int):
-        pass
+    def get_flash_card(self, flash_card: int) -> Iterator[Any]:
+        return self.infrastructure_db.query_flash_card(flash_card)
 
     def create_flash_card(
             self,
