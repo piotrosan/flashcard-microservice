@@ -1,15 +1,16 @@
-from typing import Annotated, List, Iterable
+from typing import Annotated, List, Iterable, Union, Optional, Tuple
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Request, Body
 
 from domain.flash_card.service import FashCardService
 from infrastructure.database.sql.api.flash_card_database_api import FlashCardDBAPI
 from infrastructure.database.sql.models import FlashCard
-from infrastructure.routers.models.request.flash_card import CreateFlashCardRequest
-from infrastructure.routers.models.response.flash_card import FlashCardResponse
+from infrastructure.database.sql.models.flash_card import Language
+from infrastructure.routers.models.request.flash_card import \
+    CreateFlashCardRequest, CreateLanguageRequest
+from infrastructure.routers.models.response.flash_card import FlashCardResponse, \
+    LanguageResponse
 from infrastructure.security.permission.app_admin import check_admin
-
-# from ..dependencies import get_token_header
 
 router = APIRouter(
     prefix="/flash-card",
@@ -27,33 +28,34 @@ async def get_fash_card(
 ):
     pass
 
-@router.get("/")
-async def list_fash_cards(request: Request):
+@router.get("/{page_id}")
+async def list_fash_cards(
+        request: Request,
+        page_id: Annotated[int, Path()],
+):
     pass
 
 @router.put(
-    "/{item_id}",
-    tags=["custom"],
-    responses={403: {"description": "Operation forbidden"}},
+    "/{flash_card_id}",
+    response_model=dict
 )
-async def update_item(item_id: str):
-    if item_id != "plumbus":
-        raise HTTPException(
-            status_code=403, detail="You can only update the item: plumbus"
-        )
-    return {"item_id": item_id, "name": "The great Plumbus"}
+async def update_flash_card(
+        request: Request,
+        flash_card_id: Annotated[int, Path()],
+):
+    return {}
 
 
 @router.post(
     "/",
     response_model=List[FlashCardResponse]
 )
-async def create_flash_card(
+def create_flash_card(
         request: Request,
         flash_card_datas: Annotated[List[CreateFlashCardRequest], Body(...)]
 ) -> List[FlashCardResponse]:
     # check permission
-    check_admin(request.user)
+    # check_admin(request.user)
 
     fapi = FlashCardDBAPI()
     service = FashCardService(fapi)
@@ -62,9 +64,62 @@ async def create_flash_card(
         FlashCardResponse(
             id=fc.id,
             word=fc.word,
+            language_id=fc.language_id,
             translate=fc.translate,
             create_at=fc.create_at,
             updated_at=fc.updated_at
         )
             for fc in fcs
+    ]
+
+@router.post(
+    "/language",
+    response_model=List[LanguageResponse]
+)
+def create_language(
+        request: Request,
+        languages: Annotated[List[CreateLanguageRequest], Body(...)]
+) -> List[LanguageResponse]:
+    # check permission
+    # check_admin(request.user)
+
+    fapi = FlashCardDBAPI()
+    service = FashCardService(fapi)
+    ls: Iterable[Language] = service.create_language(languages)
+    return [
+        LanguageResponse(
+            id=l.id,
+            shortcut=l.shortcut,
+            full_name=l.full_name,
+            create_at=l.create_at,
+            updated_at=l.updated_at
+        )
+            for l in ls
+    ]
+
+
+@router.get(
+    "/language/{page_id}",
+    response_model=List[LanguageResponse]
+)
+def get_language(
+        request: Request,
+        page_id: Annotated[int, Path(...)]
+) -> List[LanguageResponse]:
+    # check permission
+    # check_admin(request.user)
+
+    fapi = FlashCardDBAPI()
+    service = FashCardService(fapi)
+    ls: Iterable[Tuple[Language]] = service.get_language()
+
+    return [
+        LanguageResponse(
+            id=l[0].id,
+            shortcut=l[0].shortcut,
+            full_name=l[0].full_name,
+            create_at=l[0].create_at,
+            updated_at=l[0].updated_at
+        )
+            for l in ls
     ]

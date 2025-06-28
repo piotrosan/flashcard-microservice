@@ -9,10 +9,10 @@ from sqlalchemy import exc
 from infrastructure.database.sql.api.engine import DBEngine, DBEngineAbstract
 from infrastructure.database.sql.models.test_knowledge import TestKnowledge, \
     AssociationKnowledgeFlashCard
-from infrastructure.database.sql.models.flash_card import FlashCard
+from infrastructure.database.sql.models.flash_card import FlashCard, Language
 from infrastructure.database.sql.api.exception.flash_card_exception import FlashCardHttpException
 from infrastructure.routers.models.request.flash_card import \
-    CreateFlashCardRequest
+    CreateFlashCardRequest, CreateLanguageRequest
 
 logger = logging.getLogger("root")
 
@@ -23,11 +23,6 @@ class CreateFlashCardDBAPI(DBEngineAbstract):
             self,
             flash_card_datas: List[CreateFlashCardRequest],
     ) -> Iterable[FlashCard]:
-        """
-        :param external_login_data:
-        :param user_data:
-        :return: list of id of created models
-        """
         try:
 
             return self.insert_objects([
@@ -38,6 +33,23 @@ class CreateFlashCardDBAPI(DBEngineAbstract):
             logger.critical(f"Problem wile insert flash card -> {e}")
             raise FlashCardHttpException(
                 detail="Can not insert flash card",
+                status_code=400
+            )
+
+    def insert_languages(
+            self,
+            languages: List[CreateLanguageRequest],
+    ) -> Iterable[FlashCard]:
+        try:
+
+            return self.insert_objects([
+                Language(**l.model_dump(mode='python'))
+                for l in languages
+            ])
+        except exc.SQLAlchemyError as e:
+            logger.critical(f"Problem wile insert language -> {e}")
+            raise FlashCardHttpException(
+                detail="Can not insert language",
                 status_code=400
             )
 
@@ -93,6 +105,37 @@ class GetFlashCardDBAPI(DBEngineAbstract):
                 detail="Can not select flash cards",
                 status_code=400
             )
+
+    def _select_languages(self):
+        try:
+            return select(Language)
+        except exc.SQLAlchemyError as e:
+            logger.critical(
+                f"Problem wile select Language dictionary {e}")
+            raise FlashCardHttpException(
+                detail="Can not select Language",
+                status_code=400
+            )
+
+    def query_languages(
+            self,
+            page: int = None
+    ) -> Iterator[Any]:
+        try:
+            return self.query_statement(
+                    self._select_languages(),
+                    Language,
+                    page
+                )
+        except exc.SQLAlchemyError as e:
+            logger.critical(
+                f"Problem wile select languages -> {e}"
+            )
+            raise FlashCardHttpException(
+                detail=f"Can not select languages",
+                status_code=400
+            )
+
 
     def query_all_flash_card_with_attachments_generator(
             self,
