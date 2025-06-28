@@ -39,7 +39,7 @@ class CreateFlashCardDBAPI(DBEngineAbstract):
     def insert_languages(
             self,
             languages: List[CreateLanguageRequest],
-    ) -> Iterable[FlashCard]:
+    ) -> Iterable[Language]:
         try:
 
             return self.insert_objects([

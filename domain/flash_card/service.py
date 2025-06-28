@@ -30,7 +30,7 @@ class FashCardService:
     def create_language(
             self,
             languages: List[CreateLanguageRequest]
-    )-> Iterable[FlashCard]:
+    )-> Iterable[Language]:
         return self.infrastructure_db.insert_languages(languages)
 
     def get_language(
