@@ -1,5 +1,8 @@
 from typing import List, Any, Iterator
 
+from domain.flash_card.service import FashCardService
+from infrastructure.database.sql.api.flash_card_database_api import \
+    FlashCardDBAPI
 from infrastructure.database.sql.api.test_knowledge_database_api import \
     TestKnowledgeDBAPI
 from infrastructure.database.sql.models import TestKnowledge
@@ -15,22 +18,16 @@ class TestKnowledgeService:
         self.infrastructure_db = infrastructure_db
 
 
-    def insert(self, create_data: CreateKnowledgeRequest) -> List[Any]:
-       return list(self.infrastructure_db.insert(
-           create_data.model_dump(mode='Python')
-       ))
+    def insert(self, create_data: CreateKnowledgeRequest) -> TestKnowledge:
+        fapi = FlashCardDBAPI()
+        service = FashCardService(fapi)
+        flash_card = service.get_flash_cards_from_ids_list(
+            create_data.list_flash_cards)
+        return self.infrastructure_db.insert(create_data, list(flash_card))
 
     def get_test(self, id_knowledge: int):
         return self.infrastructure_db.query_test_knowledge_from_id(
             id_knowledge
-        )
-
-    def get_tests(
-            self,
-            page_id: int
-    ):
-        return self.infrastructure_db.query_all_test_knowledge_paginate_generator(
-            page=page_id
         )
 
     def get_tsts_know_for_user(
@@ -43,15 +40,15 @@ class TestKnowledgeService:
             user.hash_identifier
         )
 
-    def get_random_test_for_user(
+    def get_random_tsts_know_with_cards_for_user(
             self,
             user: User
-    ) -> Iterator[Any]:
+    ) -> Iterator[TestKnowledge]:
         count = self.infrastructure_db.get_count_test_knowledge()
         id_knowledge = random_from(count)
-        return self.infrastructure_db.get_tsts_with_cards_for_user(
-            user.hash_identifier,
-            id_knowledge,
+        return self.get_tsts_know_with_cards_for_user(
+            user,
+            id_knowledge
         )
 
 
@@ -67,11 +64,11 @@ class TestKnowledgeService:
 
     def get_tsts_know_with_cards_for_user(
             self,
-            hash_identifier: str,
+            user: User,
             id_test_knowledge: int
     ):
         return self.infrastructure_db.get_tsts_with_cards_for_user(
-            hash_identifier,
+            user.hash_identifier,
             id_test_knowledge
         )
 

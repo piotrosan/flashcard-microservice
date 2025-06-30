@@ -28,7 +28,8 @@ async def get_fash_card(
 ):
     fapi = FlashCardDBAPI()
     service = FashCardService(fapi)
-    fcs: Iterable[FlashCard] = service.get_flash_card(flash_card_id)
+    fcs: Iterable[FlashCard] = service.get_flash_cards_from_ids_list(
+        [flash_card_id])
 
     return [
         FlashCardResponse(

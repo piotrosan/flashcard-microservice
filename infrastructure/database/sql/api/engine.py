@@ -38,6 +38,9 @@ class DBEngineAbstract(abc.ABC):
     ) -> Iterable[Any]:
         raise NotImplemented()
 
+    def get_session(self):
+        raise NotImplemented()
+
     def update_object(
             self,
             obj: type[Base],
@@ -76,6 +79,9 @@ class DBEngine(DBEngineAbstract):
             s.add_all(objects)
             s.commit()
         return objects
+
+    def get_session(self):
+        return session
 
     def update_object(
             self,

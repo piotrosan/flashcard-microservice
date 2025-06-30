@@ -23,26 +23,11 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-
-@router.get("/tst/{test_id}", response_model=KnowledgeResponse)
-async def get_test_for_user(
-        id_knowledge: Annotated[int, Path()],
-        request: Request
-) -> KnowledgeResponse:
-    dbapi = TestKnowledgeDBAPI()
-    service = TestKnowledgeService(dbapi)
-    result = service.get_test_for_user(
-        id_knowledge,
-        request.user.username
-    )
-    return KnowledgeResponse()
-
-
 @router.get(
     "/tst/fsh_crd/lang/{id_test_knowledge}",
     response_model=List[KnowledgeResponse]
 )
-async def test_with_all_data_for_user_from_tst(
+async def get_test_with_all_data_for_user(
         id_test_knowledge: Annotated[int, Path()],
         request: Request
 ) -> List[KnowledgeResponse]:
@@ -76,15 +61,6 @@ async def test_with_all_data_for_user_from_tst(
     ]
 
 
-@router.get("/{test_id}", response_model=KnowledgeResponse)
-async def get_test(
-        id_knowledge: Annotated[int, Path()],
-        request: Request
-) -> KnowledgeResponse:
-    dbapi = TestKnowledgeDBAPI()
-    service = TestKnowledgeService(dbapi)
-    service.get_test(id_knowledge)
-    return KnowledgeResponse()
 
 
 @router.post("/", response_model=KnowledgeResponse)
@@ -92,40 +68,31 @@ async def create_test(
         create_date: Annotated[CreateKnowledgeRequest, Body()],
         request: Request
 ) -> KnowledgeResponse:
-    assert check_account_admin(request.user.hash_identifier)
+    # assert check_account_admin(request.user.hash_identifier)
     dbapi = TestKnowledgeDBAPI()
     service = TestKnowledgeService(dbapi)
-    saved_object: TestKnowledge = service.insert(create_date).pop()
+    saved_object: TestKnowledge = service.insert(create_date)
     return KnowledgeResponse(**saved_object.__dict__)
 
-@router.put(
-    "/",
-    response_model=GenericRequest
-)
-async def update_test(
-        test_data: Annotated[
-            UpdateKnowledgeRequest, Body()
-        ]
-):
-    dbapi = TestKnowledgeDBAPI()
-    service = TestKnowledgeService(dbapi)
-    service.update_test(test_data)
-    return GenericRequest(message='object have been updated')
 
-
-@router.websocket("/play")
+@router.websocket("/play_random")
 async def play_random(websocket: WebSocket, request: Request):
     dbapi = TestKnowledgeDBAPI()
     service = TestKnowledgeService(dbapi)
     statistics = {}
-    test_knowledge_with_content = service.get_random_test_for_user(request.user)
+    test_knowledge_with_content: Iterator[TestKnowledge] = \
+        service.get_random_tsts_know_with_cards_for_user(request.user)
+    test = next(test_knowledge_with_content)
+    flsh_crds: List[FlashCard] = test.flash_cards
+
     await websocket.accept()
-    while True:
-        data = await websocket.receive_text()
-        await websocket.send_text(
-            f"Session cookie or query token value is: {cookie_or_token}"
-        )
-        if q is not None:
-            await websocket.send_text(f"Query parameter q is: {q}")
-        await websocket.send_text(f"Message text was: {data}, for item ID: {item_id}")
+    while flsh_crds:
+        await websocket.send_json(flsh_crds.pop(0).__dict__)
+        result = await websocket.receive_json()
+        if result['correct']:
+            statistics[result['word']] = True
+        else:
+            statistics[result['word']] = False
+
+    await websocket.send_text('Test have been finish')
     return GenericRequest(message='object have been updated')

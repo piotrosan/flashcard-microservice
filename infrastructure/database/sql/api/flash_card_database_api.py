@@ -71,12 +71,12 @@ class GetFlashCardDBAPI(DBEngineAbstract):
 
         return tmp_select
 
-    def _select_flash_card_from_id(self, id_flash_card: int):
+    def _select_flash_card_from_id(self, ids_flash_card: List[int]):
         try:
             return select(FlashCard).where(
                 cast(
                     "ColumnElement[bool]",
-                    FlashCard.id == str(id_flash_card)
+                    FlashCard.id.in_(ids_flash_card)
                 )
             )
         except exc.SQLAlchemyError as e:
@@ -156,25 +156,23 @@ class GetFlashCardDBAPI(DBEngineAbstract):
                 status_code=400
             )
 
-    def query_flash_card(
+    def query_flash_cards(
             self,
-            flash_card_id: int,
+            flash_card_ids: List[int],
             page: int = None
     ) -> Iterator[Any]:
         try:
-            return next(
-                self.query_statement(
-                    self._select_flash_card_from_id(flash_card_id),
+            return self.query_statement(
+                    self._select_flash_card_from_id(flash_card_ids),
                     FlashCard,
                     page
                 )
-            )
         except exc.SQLAlchemyError as e:
             logger.critical(
-                f"Problem wile select flash card {flash_card_id} -> {e}"
+                f"Problem wile select flash card {flash_card_ids} -> {e}"
             )
             raise FlashCardHttpException(
-                detail=f"Can not select flash card {flash_card_id}",
+                detail=f"Can not select flash card {flash_card_ids}",
                 status_code=400
             )
 

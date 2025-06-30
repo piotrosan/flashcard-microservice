@@ -1,8 +1,8 @@
 import logging
-from typing import Iterable, List, cast, Generator, Iterator, Dict
+from typing import Iterable, List, cast, Generator, Iterator, Dict, Tuple
 
 from sqlalchemy.engine.result import Result
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, Session
 from typing_extensions import Any
 
 from sqlalchemy import select, text, and_
@@ -10,11 +10,13 @@ from sqlalchemy import exc
 
 from infrastructure.database.sql.api.analytics import AnalyticsSQLMixin
 from infrastructure.database.sql.api.engine import DBEngine, DBEngineAbstract
-from infrastructure.database.sql.models import Language
+from infrastructure.database.sql.models import Language, TestKnowledge
 from infrastructure.database.sql.models.test_knowledge import TestKnowledge, \
     AssociationKnowledgeFlashCard
 from infrastructure.database.sql.models.flash_card import FlashCard
 from infrastructure.database.sql.api.exception.test_knowledge_exception import TestKnowledgeHttpException
+from infrastructure.routers.models.request.knowledge import \
+    CreateKnowledgeRequest
 
 logger = logging.getLogger("root")
 
@@ -23,12 +25,28 @@ class CreateTestKnowledgeDBAPIMixin(DBEngineAbstract):
 
     def insert(
             self,
-            test_knowledge_data: dict
-    ) -> Iterable[TestKnowledge]:
+            test_knowledge_data: CreateKnowledgeRequest,
+            list_flash_cards: List[Tuple[FlashCard]]
+    ) -> TestKnowledge | None:
+
+        session: Session = self.get_session()
         try:
-            test_knowledge = TestKnowledge(**test_knowledge_data)
-            return self.insert_objects([test_knowledge])
+            test_knowledge = TestKnowledge(
+                planned_start=test_knowledge_data.planned_start,
+                user_identifier=test_knowledge_data.user_identifier
+            )
+            session.add(test_knowledge)
+
+            asso = [
+                AssociationKnowledgeFlashCard(
+                    test_knowledge=test_knowledge,
+                    flash_card=flsh[0]
+                )
+                for flsh in list_flash_cards
+            ]
+            session.add_all(asso)
         except exc.SQLAlchemyError as e:
+            session.rollback()
             logger.critical(
                 f"Problem wile insert test "
                 f"knowledge {test_knowledge_data} -> {e}"
@@ -37,6 +55,9 @@ class CreateTestKnowledgeDBAPIMixin(DBEngineAbstract):
                 detail="Can not insert test knowledge",
                 status_code=400
             )
+        else:
+            session.commit()
+            return test_knowledge
 
 
 class GetTestKnowledgeDBAPIMixin(DBEngineAbstract):

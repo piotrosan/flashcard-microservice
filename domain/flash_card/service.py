@@ -16,8 +16,8 @@ class FashCardService:
     def get_flash_cards(self, page_id: int) -> Iterator[Any]:
         return self.infrastructure_db.query_flash_cards_generator(page_id)
 
-    def get_flash_card(self, flash_card: int) -> Iterator[Any]:
-        return self.infrastructure_db.query_flash_card(flash_card)
+    def get_flash_cards_from_ids_list(self, flash_cards: List[int]) -> Iterator[Any]:
+        return self.infrastructure_db.query_flash_cards(flash_cards)
 
     def create_flash_card(
             self,
