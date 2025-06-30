@@ -1,13 +1,12 @@
 from typing import Annotated, Iterator, Tuple, List
-from fastapi import APIRouter, HTTPException, Path, Request, Body, WebSocket
+from fastapi import APIRouter, Path, Request, Body, WebSocket
 
 from infrastructure.database.sql.api.test_knowledge_database_api import \
     TestKnowledgeDBAPI
 from infrastructure.database.sql.models import FlashCard
 from infrastructure.database.sql.models.test_knowledge import TestKnowledge
-from infrastructure.routers.models.request.generic import GenericRequest
-from infrastructure.routers.models.request.knowledge import \
-    CreateKnowledgeRequest, UpdateKnowledgeRequest
+from infrastructure.routers.models.request.generic import GenericResponse
+from infrastructure.routers.models.request.knowledge import CreateKnowledgeRequest
 from domain.test_knowledge.service import TestKnowledgeService
 from infrastructure.routers.models.response.flash_card import FlashCardResponse
 from infrastructure.routers.models.response.knowledge import KnowledgeResponse
@@ -61,8 +60,6 @@ async def get_test_with_all_data_for_user(
     ]
 
 
-
-
 @router.post("/", response_model=KnowledgeResponse)
 async def create_test(
         create_date: Annotated[CreateKnowledgeRequest, Body()],
@@ -95,4 +92,4 @@ async def play_random(websocket: WebSocket, request: Request):
             statistics[result['word']] = False
 
     await websocket.send_text('Test have been finish')
-    return GenericRequest(message='object have been updated')
+    return GenericResponse(message='object have been updated')

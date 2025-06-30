@@ -1,16 +1,21 @@
-from typing import Annotated, List, Iterable, Union, Optional, Tuple
+from typing import Annotated, List, Iterable, Tuple
 
-from fastapi import APIRouter, Depends, HTTPException, Path, Request, Body
+from fastapi import APIRouter, Path, Request, Body
 
 from domain.flash_card.service import FashCardService
 from infrastructure.database.sql.api.flash_card_database_api import FlashCardDBAPI
 from infrastructure.database.sql.models import FlashCard
 from infrastructure.database.sql.models.flash_card import Language
-from infrastructure.routers.models.request.flash_card import \
-    CreateFlashCardRequest, CreateLanguageRequest
-from infrastructure.routers.models.response.flash_card import FlashCardResponse, \
+from infrastructure.routers.models.request.flash_card import (
+    CreateFlashCardRequest,
+    CreateLanguageRequest
+)
+from infrastructure.routers.models.response.flash_card import (
+    FlashCardResponse,
     LanguageResponse
+)
 from infrastructure.security.permission.app_admin import check_admin
+
 
 router = APIRouter(
     prefix="/flash-card",
@@ -21,6 +26,7 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
+
 @router.get("/one/{flash_card_id}", response_model=List[FlashCardResponse])
 async def get_fash_card(
         flash_card_id: Annotated[int, Path()],
@@ -28,20 +34,22 @@ async def get_fash_card(
 ):
     fapi = FlashCardDBAPI()
     service = FashCardService(fapi)
-    fcs: Iterable[FlashCard] = service.get_flash_cards_from_ids_list(
-        [flash_card_id])
+    fcs: Iterable[Tuple[FlashCard]] = service.get_flash_cards_from_ids_list(
+        [flash_card_id]
+    )
 
     return [
         FlashCardResponse(
-            id=fc.id,
-            word=fc.word,
-            language_id=fc.language_id,
-            translate=fc.translate,
-            create_at=fc.create_at,
-            updated_at=fc.updated_at
+            id=fc[0].id,
+            word=fc[0].word,
+            language_id=fc[0].language_id,
+            translate=fc[0].translate,
+            create_at=fc[0].create_at,
+            updated_at=fc[0].updated_at
         )
             for fc in fcs
     ]
+
 
 @router.get("/page/{page_id}", response_model=List[FlashCardResponse])
 async def get_fash_cards(
@@ -63,16 +71,6 @@ async def get_fash_cards(
         )
             for fc in fcs
     ]
-
-@router.put(
-    "/{flash_card_id}",
-    response_model=dict
-)
-async def update_flash_card(
-        request: Request,
-        flash_card_id: Annotated[int, Path()],
-):
-    return {}
 
 
 @router.post(
@@ -100,6 +98,7 @@ def create_flash_card(
         )
             for fc in fcs
     ]
+
 
 @router.post(
     "/language",

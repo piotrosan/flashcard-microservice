@@ -7,7 +7,7 @@ from pydantic_core.core_schema import FieldValidationInfo
 class GenericRequest(BaseModel):
     model_config = {"validate_default": True}
 
-    timestamp: str
+    timestamp: str = None
     message: str
 
     @field_validator("timestamp", mode="before")
@@ -18,3 +18,5 @@ class GenericRequest(BaseModel):
     ) -> str:
         return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
+class GenericResponse(GenericRequest):
+    pass
