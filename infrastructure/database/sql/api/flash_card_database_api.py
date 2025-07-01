@@ -1,5 +1,5 @@
 import logging
-from typing import Iterable, List, cast, Generator, Iterator
+from typing import Iterable, List, cast, Iterator
 
 from typing_extensions import Any
 
@@ -7,12 +7,15 @@ from sqlalchemy import select, text
 from sqlalchemy import exc
 
 from infrastructure.database.sql.api.engine import DBEngine, DBEngineAbstract
-from infrastructure.database.sql.models.test_knowledge import TestKnowledge, \
-    AssociationKnowledgeFlashCard
+from infrastructure.database.sql.models.test_knowledge import TestKnowledge
+
 from infrastructure.database.sql.models.flash_card import FlashCard, Language
 from infrastructure.database.sql.api.exception.flash_card_exception import FlashCardHttpException
-from infrastructure.routers.models.request.flash_card import \
-    CreateFlashCardRequest, CreateLanguageRequest
+from infrastructure.routers.models.request.flash_card import (
+    CreateFlashCardRequest,
+    CreateLanguageRequest
+)
+
 
 logger = logging.getLogger("root")
 

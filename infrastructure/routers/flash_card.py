@@ -15,7 +15,7 @@ from infrastructure.routers.models.response.flash_card import (
     LanguageResponse
 )
 from infrastructure.security.permission.app_admin import check_admin
-
+from infrastructure.security.permission.user import check_user
 
 router = APIRouter(
     prefix="/flash-card",
@@ -32,6 +32,7 @@ async def get_fash_card(
         flash_card_id: Annotated[int, Path()],
         request: Request
 ):
+    check_user(request.user)
     fapi = FlashCardDBAPI()
     service = FashCardService(fapi)
     fcs: Iterable[Tuple[FlashCard]] = service.get_flash_cards_from_ids_list(

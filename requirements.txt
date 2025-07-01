@@ -44,3 +44,6 @@ wheel==0.45.1
 psycopg2==2.9.10
 uvicorn==0.32.1
 requests==2.32.3
+pydantic_core~=2.33.2
+typing_extensions~=4.13.2
+cachetools~=6.1.0

@@ -158,6 +158,3 @@ async def get_group_role(
             name=g.name,
             roles=[Role(name=r.name) for r in g.roles]
         ) for g in request.user.user_groups]
-
-
-

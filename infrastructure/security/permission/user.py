@@ -6,7 +6,7 @@ from infrastructure.security.permission.exception.auth import \
     PermissionHTTPException
 
 
-def check_app_user(user: User) -> None:
+def check_user(user: User) -> None:
     ugs: List[UserGroup] = user.user_groups
 
     result = [
