@@ -14,9 +14,8 @@ DOMAIN = 'localhost'
 PORT = 8002
 
 BASE_URL = f"{'https' if SSL_CERTFILE else 'http'}://{DOMAIN}:{PORT}"
-
-CONFIG_WEBHOOK = f'{BASE_URL}/'
-
+CONFIG_WEBHOOK_URL = f'{BASE_URL}/user_group_role'
+CONFIG_WEBHOOK_METHOD = 'POST'
 
 # database
 PAGINATION_PER_PAGE = 50

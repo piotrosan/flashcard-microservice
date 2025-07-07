@@ -1,6 +1,8 @@
+import datetime
 from typing import Annotated, List, Iterator, Iterable
 from fastapi import APIRouter, Depends, HTTPException, Path, Request, Body
 
+import settings
 from domain.auth.service import AuthService
 from infrastructure.database.sql.api.user_permission_database import \
     UserPermissionDBAPI
@@ -10,6 +12,8 @@ from infrastructure.routers.models.request.permission import \
 from infrastructure.routers.models.response.generic import GenericResponse
 from infrastructure.routers.models.response.permission import \
     UserPermissionResponse
+from infrastructure.security.middleware.exception.auth_exception import \
+    TokenAuthException
 
 router = APIRouter(
     prefix="/permission",
@@ -158,3 +162,21 @@ async def get_group_role(
             name=g.name,
             roles=[Role(name=r.name) for r in g.roles]
         ) for g in request.user.user_groups]
+
+
+
+@router.get(
+    "/exist",
+    response_model=dict
+)
+async def exist(
+    request: Request
+):
+    try:
+        return {
+            'id': settings.APP_ID,
+            'name': settings.NAME,
+            'na_me': settings.NA_ME
+        }
+    except TokenAuthException as e:
+        return {}

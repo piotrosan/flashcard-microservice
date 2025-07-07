@@ -18,7 +18,8 @@ class TokenRequester:
     def request_for_validate(self, token) -> Tuple[bool, dict]:
         try:
             result = requests.post(
-                url=REMOTE_VALIDATE_TOKEN, json={f'token: {token}, app: {APP_ID}'}
+                url=REMOTE_VALIDATE_TOKEN, json={
+                    f'token: {token}, app: {APP_ID}'}
             )
         except requests.exceptions.RequestException as e:
             raise TokenRequestGetter(detail=str(e), status_code=403)

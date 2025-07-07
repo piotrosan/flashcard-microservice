@@ -17,7 +17,8 @@ class AppRegister:
             'app': settings.APP_ID,
             'name': settings.NAME,
             'na_me': settings.NA_ME,
-            'host': settings.BASE_URL
+            'method': settings.CONFIG_WEBHOOK_METHOD,
+            'callback_url': settings.CONFIG_WEBHOOK_URL
         }
 
     def send_register_request(self):

@@ -16,8 +16,12 @@ from infrastructure.security.token.requester import TokenRequester
 
 class TokenAuthBackend(AuthenticationBackend):
 
-
-    @cachetools.cached(cache=cachetools.TTLCache(maxsize=128, ttl=10 * 60))
+    @cachetools.cached(
+        cache=cachetools.TTLCache(
+            maxsize=128,
+            ttl=10 * 60
+        )
+    )
     def _get_user(self, user_identifier) -> User:
         up_db = UserPermissionDBAPI()
         ats = AuthService(up_db)
